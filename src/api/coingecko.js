@@ -2,8 +2,7 @@ import axios from 'axios'
 
 export const API_ROOT_URL = 'https://api.coingecko.com/api/v3'
 export const TOKEN_LIST_URL = 'https://tokens.coingecko.com/uniswap/all.json'
-export const ETHEREUM_LOGO_URL =
-  'https://assets.coingecko.com/coins/images/279/large/ethereum.png'
+export const ETHEREUM_LOGO_URL = 'https://assets.coingecko.com/coins/images/279/large/ethereum.png'
 export const client = axios.create({
   headers: {
     Accept: 'application/json',
@@ -22,9 +21,7 @@ export default {
       .then(({data}) => Promise.resolve(data.ethereum[currencyCode.toLowerCase()]))
   },
   getTokenRate(token, currencyCode) {
-    const url = `${API_ROOT_URL}/simple/token_price/ethereum?contract_addresses=${
-      token.address
-    }&vs_currencies=${currencyCode}`
+    const url = `${API_ROOT_URL}/simple/token_price/ethereum?contract_addresses=${token.address}&vs_currencies=${currencyCode}`
     return client.get(url).then(({data}) => {
       // Attention: data will be keyed by checksummed token address,
       // while token address is not necessarily checksummed. This is

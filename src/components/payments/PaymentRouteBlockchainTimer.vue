@@ -22,7 +22,7 @@ export default {
     ...mapGetters('network', {
       synced: 'ethereumSynced',
       online: 'ethereumOnline',
-      currentBlock: 'currentBlock',
+      currentBlock: 'currentBlock'
     }),
     expired() {
       return this.currentBlock > this.expires_on

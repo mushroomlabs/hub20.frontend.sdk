@@ -15,11 +15,7 @@
     <div class="payments">
       <h5 v-if="hasPayments">Received Payments</h5>
       <ul v-if="hasPayments">
-        <li
-          :class="{confirmed: payment.confirmed}"
-          v-for="payment in payments"
-          :key="payment.id"
-        >
+        <li :class="{confirmed: payment.confirmed}" v-for="payment in payments" :key="payment.id">
           <span class="amount-value">{{
             payment.amount | formattedAmount(payment.currency)
           }}</span>
