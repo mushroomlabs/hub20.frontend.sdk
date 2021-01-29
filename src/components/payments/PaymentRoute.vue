@@ -3,14 +3,21 @@
     <QrCode :message="QrCodeMessage" />
     <div class="payment-route-details">
       <ClipboardCopier :value="route.address">Address: {{ route.address }}</ClipboardCopier>
-      <ClipboardCopier v-if="isRaidenRoute" :value="route.identifier">Payment Identifier: {{ route.identifier }}</ClipboardCopier>
+      <ClipboardCopier v-if="isRaidenRoute" :value="route.identifier"
+        >Payment Identifier: {{ route.identifier }}</ClipboardCopier
+      >
     </div>
     <PaymentRouteBlockchainTimer
       v-if="isBlockchainRoute"
       :created_on="route.start_block"
       :expires_on="route.expiration_block"
     />
-    <Web3TransferButton v-if="isBlockchainRoute" :token="token" :amount="amount" :recipientAddress="route.address" />
+    <Web3TransferButton
+      v-if="isBlockchainRoute"
+      :token="token"
+      :amount="amount"
+      :recipientAddress="route.address"
+    />
   </div>
 </template>
 
@@ -24,7 +31,6 @@ import Web3TransferButton from '../web3/Web3TransferButton'
 
 import QrCode from './QrCode'
 import PaymentRouteBlockchainTimer from './PaymentRouteBlockchainTimer'
-
 
 export default {
   components: {
@@ -61,8 +67,8 @@ export default {
     ...mapGetters('network', ['currentBlock']),
     QrCodeMessage() {
       let protocol = {
-        blockchain: "ethereum",
-        raiden: "ethereum"
+        blockchain: 'ethereum',
+        raiden: 'ethereum'
       }[this.route.type]
 
       let text = `${protocol}:${this.route.address}`

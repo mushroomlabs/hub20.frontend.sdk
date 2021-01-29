@@ -34,8 +34,7 @@ const sumBalances = (one, another) => {
 const filterByToken = (tokenList, token) =>
   tokenList && tokenList.filter(tokenBalance => isSameToken(tokenBalance, token))
 
-const getTokenBalance = (tokenList, token) =>
-  tokenList && filterByToken(tokenList, token).shift()
+const getTokenBalance = (tokenList, token) => tokenList && filterByToken(tokenList, token).shift()
 
 const initialState = () => ({
   loadingBooks: false,
@@ -55,10 +54,8 @@ const getters = {
   treasuryTokenBalance: (state, getters) => token =>
     getTokenBalance(getters.treasuryBalances, token),
   userTokenBalance: (state, getters) => token => getTokenBalance(getters.userBalances, token),
-  walletTokenBalance: (state, getters) => token =>
-    getTokenBalance(getters.walletBalances, token),
-  raidenTokenBalance: (state, getters) => token =>
-    getTokenBalance(getters.raidenBalances, token),
+  walletTokenBalance: (state, getters) => token => getTokenBalance(getters.walletBalances, token),
+  raidenTokenBalance: (state, getters) => token => getTokenBalance(getters.raidenBalances, token),
   externalTokenBalance: (state, getters) => token =>
     getTokenBalance(getters.externalAccountBalances, token),
   totalTokenAssets: (state, getters) => token => {

@@ -1,11 +1,13 @@
 <template>
-<div class="payment-request">
+  <div class="payment-request">
     <div class="button-bar" v-if="hasMultipleRoutes">
       <button
         type="button"
         v-for="route in openRoutes"
         :value="route.type"
-        :class="{active: !hasMultipleRoutes || (route.type == (selectedRoute && selectedRoute.type))}"
+        :class="{
+          active: !hasMultipleRoutes || route.type == (selectedRoute && selectedRoute.type)
+        }"
         @click="selectRoute(route)"
         :key="route.type"
       >
@@ -19,7 +21,7 @@
       :token="token"
       :amount="paymentRequest.amount"
       :key="route.type"
-      :selected="!hasMultipleRoutes || (route == selectedRoute)"
+      :selected="!hasMultipleRoutes || route == selectedRoute"
     />
     <PaymentTracker :paymentRequest="paymentRequest" />
   </div>
@@ -33,7 +35,6 @@ import PaymentTracker from './PaymentTracker'
 
 import TokenMixin from '../../mixins/tokens'
 
-
 export default {
   mixins: [TokenMixin],
   components: {
@@ -45,7 +46,7 @@ export default {
       type: Object
     }
   },
-  data(){
+  data() {
     return {
       selectedRoute: null
     }
@@ -59,7 +60,9 @@ export default {
       return this.getToken(this.paymentRequest.token)
     },
     openRoutes() {
-      return this.paymentRequest ? this.paymentRequest.routes.filter(route => this.isOpenRoute(route)) : []
+      return this.paymentRequest
+        ? this.paymentRequest.routes.filter(route => this.isOpenRoute(route))
+        : []
     }
   },
   methods: {
@@ -73,7 +76,7 @@ export default {
       this.selectedRoute = route
     },
     isOpenRoute(route) {
-      if (route.type == 'blockchain'){
+      if (route.type == 'blockchain') {
         return this.currentBlock <= route.expiration_block
       }
       return true
