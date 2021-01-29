@@ -1,34 +1,38 @@
 {
-  "name": "vue-hub20",
+  "name": "hub20-vue-sdk",
   "version": "0.0.1",
   "private": false,
   "scripts": {
-    "run": "vue-cli-service build --target lib --name hub20 --watch",
-    "build": "vue-cli-service build --target lib --name hub20",
+    "build": "vue-cli-service build --target lib --name Hub20Sdk --entry src/index.js",
     "test:unit": "vue-cli-service test:unit",
     "lint": "vue-cli-service lint"
   },
   "main": "./src/index.js",
   "dependencies": {
-    "decimal.js-light": "^2.5.0",
-    "jshashes": "^1.0.7",
+    "@vue/cli": "^4.5.11",
+    "axios": "^0.21.1",
+    "core-js": "^3.6.5",
+    "decimal.js-light": "^2.5.1",
+    "ethers": "^5.0.26",
+    "jshashes": "^1.0.8",
     "qrcode": "^1.4.4",
-    "vue": "^2.6.10",
+    "semver": "^7.3.4",
+    "vue": "^2.6.12",
     "vue-moment": "^4.1.0",
-    "vue-simple-progress": "^1.1.1",
-    "vuex": "^3.1.2"
+    "vuex": "^3.6.2"
   },
   "devDependencies": {
-    "@vue/cli-plugin-babel": "^4.1.0",
-    "@vue/cli-plugin-router": "^4.1.0",
-    "@vue/cli-plugin-unit-jest": "^4.1.2",
-    "@vue/cli-plugin-vuex": "^4.1.0",
-    "@vue/cli-service": "^4.1.0",
-    "@vue/test-utils": "1.0.0-beta.29",
-    "babel-eslint": "^10.0.3",
-    "eslint": "^5.16.0",
-    "eslint-plugin-vue": "^5.0.0",
-    "vue-template-compiler": "^2.6.10"
+    "@vue/cli-plugin-babel": "~4.5.0",
+    "@vue/cli-plugin-router": "^4.5.11",
+    "@vue/cli-plugin-unit-jest": "^4.5.11",
+    "@vue/cli-plugin-vuex": "^4.5.11",
+    "@vue/cli-service": "^4.5.11",
+    "@vue/test-utils": "^1.1.2",
+    "babel-eslint": "^10.1.0",
+    "eslint": "^7.18.0",
+    "eslint-plugin-vue": "^7.5.0",
+    "vue-jest": "^3.0.7",
+    "vue-template-compiler": "^2.6.12"
   },
   "eslintConfig": {
     "root": true,
