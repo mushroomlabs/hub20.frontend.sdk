@@ -69,6 +69,15 @@
         "env": {
           "jest": true
         }
+      },
+      {
+        "files": [
+          "**/__tests__/*.{j,t}s?(x)",
+          "**/tests/unit/**/*.spec.{j,t}s?(x)"
+        ],
+        "env": {
+          "jest": true
+        }
       }
     ]
   },
@@ -78,6 +87,12 @@
   ],
   "jest": {
     "preset": "@vue/cli-plugin-unit-jest"
+  },
+  "prettier": {
+    "singleQuote": true,
+    "semi": false,
+    "bracketSpacing": false,
+    "printWidth": 99
   },
   "license": "MIT"
 }
