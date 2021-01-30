@@ -1,0 +1,29 @@
+stages:
+  - test_and_build
+  - build_and_publish
+
+test:
+  image: node:15
+  stage: test_and_build
+
+  before_script:
+    - yarn install
+
+  script:
+    - yarn test:unit
+    - yarn build
+
+release:
+  image: node:15
+  stage: build_and_publish
+
+  before_script:
+    - yarn install
+
+  script:
+    - yarn build
+    - echo '//registry.npmjs.org/:_authToken=${NPM_TOKEN}' > .npmrc
+    - npm publish
+
+  only:
+    - master
