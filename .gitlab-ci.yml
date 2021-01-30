@@ -1,31 +1,22 @@
+default:
+  image: node:15
+
 stages:
-  - test
-  - build
-  - publish
+  - test_and_build
+  - build_and_publish
 
 test:
-  stage: test
-  image: node:15
+  stage: test_and_build
 
   before_script:
     - yarn install
 
   script:
     - yarn test:unit
-
-build:
-  stage: build
-  image: node:15
-
-  before_script:
-    - yarn install
-
-  script:
     - yarn build
 
-publish:
-  stage: publish
-  image: node:15
+release:
+  stage: build_and_publish
 
   before_script:
     - yarn install
