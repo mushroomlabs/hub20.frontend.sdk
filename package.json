@@ -1,11 +1,9 @@
 {
   "name": "hub20-vue-sdk",
-  "version": "0.0.1",
+  "version": "0.1.1",
   "private": false,
   "scripts": {
-    "build": "vue-cli-service build --target lib --name Hub20 --entry src/index.js",
-    "test:unit": "vue-cli-service test:unit",
-    "lint": "vue-cli-service lint"
+    "postversion": "git push --follow-tags"
   },
   "main": "./src/index.js",
   "dependencies": {
@@ -94,8 +92,5 @@
     "bracketSpacing": false,
     "printWidth": 99
   },
-  "license": "MIT",
-  "scripts": {
-    "postversion": "git push --follow-tags"
-  }
+  "license": "MIT"
 }
