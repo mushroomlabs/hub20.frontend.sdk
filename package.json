@@ -94,5 +94,8 @@
     "bracketSpacing": false,
     "printWidth": 99
   },
-  "license": "MIT"
+  "license": "MIT",
+  "scripts": {
+    "postversion": "git push --follow-tags"
+  }
 }
