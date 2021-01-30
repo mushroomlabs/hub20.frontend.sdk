@@ -1,11 +1,9 @@
-default:
-  image: node:15
-
 stages:
   - test_and_build
   - build_and_publish
 
 test:
+  image: node:15
   stage: test_and_build
 
   before_script:
@@ -16,6 +14,7 @@ test:
     - yarn build
 
 release:
+  image: node:15
   stage: build_and_publish
 
   before_script:
