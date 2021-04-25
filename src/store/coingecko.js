@@ -1,15 +1,17 @@
 import Vue from 'vue'
 
-import coingecko from '../api/coingecko'
+import client from '../api/coingecko'
 import {BASE_TOKEN_LIST, ETHEREUM_NETWORKS} from './tokens'
 
 export const EXCHANGE_RATE_SET_COINGECKO_LIST = 'EXCHANGE_RATE_SET_COINGECKO_LIST'
 export const EXCHANGE_RATE_SET_COINGECKO_RATE = 'EXCHANGE_RATE_SET_COINGECKO_RATE'
+export const COINGECKO_TOKEN_SET_LOGO_URL = 'COINGECKO_TOKEN_SET_LOGO_URL'
 
 const initialState = () => ({
   tokens: [],
   exchangeRates: {},
-  baseCurrency: 'USD'
+  baseCurrency: 'USD',
+  tokenLogoMap: {},
 })
 
 const getters = {
@@ -19,12 +21,27 @@ const getters = {
     return exchangeRates && exchangeRates[token.address]
   },
   tokenByAddress: state => tokenAddress =>
-    state.tokens.filter(token => token.address == tokenAddress).shift()
+    state.tokens.filter(token => token.address == tokenAddress).shift(),
+  tokenLogoByAddress: state => tokenAddress => state.tokenLogoMap[tokenAddress],
+}
+
+const mutations = {
+  [EXCHANGE_RATE_SET_COINGECKO_LIST](state, tokenList) {
+    state.tokens = tokenList
+  },
+  [EXCHANGE_RATE_SET_COINGECKO_RATE](state, {token, currencyCode, rate}) {
+    let exchangeRates = state.exchangeRates[currencyCode] || {}
+    exchangeRates[token.address] = rate
+    Vue.set(state, 'exchangeRates', {[currencyCode]: exchangeRates})
+  },
+  [COINGECKO_TOKEN_SET_LOGO_URL](state, {token, url}) {
+    Vue.set(state.tokenLogoMap, token.address, url)
+  },
 }
 
 const actions = {
   fetchCoingeckoTokenList({commit}) {
-    return coingecko
+    return client
       .getTokenList()
       .then(({data}) => commit(EXCHANGE_RATE_SET_COINGECKO_LIST, data.tokens))
   },
@@ -38,11 +55,11 @@ const actions = {
     const coingeckoToken = address && getters.tokenByAddress(address)
 
     if (coingeckoToken) {
-      return coingecko
+      return client
         .getTokenRate(coingeckoToken, currencyCode)
         .then(rate => commit(EXCHANGE_RATE_SET_COINGECKO_RATE, {token, currencyCode, rate}))
     } else {
-      return coingecko
+      return client
         .getEthereumRate(currencyCode)
         .then(rate => commit(EXCHANGE_RATE_SET_COINGECKO_RATE, {token, currencyCode, rate}))
     }
@@ -52,18 +69,12 @@ const actions = {
   },
   refresh({dispatch}) {
     dispatch('fetchRates')
-  }
-}
-
-const mutations = {
-  [EXCHANGE_RATE_SET_COINGECKO_LIST](state, tokenList) {
-    state.tokens = tokenList
   },
-  [EXCHANGE_RATE_SET_COINGECKO_RATE](state, {token, currencyCode, rate}) {
-    let exchangeRates = state.exchangeRates[currencyCode] || {}
-    exchangeRates[token.address] = rate
-    Vue.set(state, 'exchangeRates', {[currencyCode]: exchangeRates})
-  }
+  fetchTokenLogoUrl({commit}, token) {
+    return client
+      .getTokenLogoUrl(token)
+      .then(url => commit(COINGECKO_TOKEN_SET_LOGO_URL, {token, url}))
+  },
 }
 
 export default {
@@ -71,5 +82,5 @@ export default {
   state: initialState(),
   getters,
   actions,
-  mutations
+  mutations,
 }

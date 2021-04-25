@@ -32,7 +32,8 @@
     "@vue/test-utils": "^1.1.2",
     "babel-eslint": "^10.1.0",
     "eslint": "^7.18.0",
-    "eslint-plugin-prettier": "^3.1.3",
+    "eslint-config-prettier": "^8.1.0",
+    "eslint-plugin-prettier": "^3.3.1",
     "eslint-plugin-vue": "^7.5.0",
     "prettier": "^1.19.1",
     "vue-jest": "^3.0.7",
@@ -44,9 +45,9 @@
       "node": true
     },
     "extends": [
-      "plugin:vue/essential",
       "eslint:recommended",
-      "@vue/prettier"
+      "plugin:vue/essential",
+      "plugin:prettier/recommended"
     ],
     "rules": {},
     "parserOptions": {
