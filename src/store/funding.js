@@ -20,7 +20,7 @@ const initialState = () => ({
 
 const getters = {
   depositsByToken: state => token =>
-    state.deposits.filter(deposit => deposit.token == token.address),
+    state.deposits.filter(deposit => deposit.token == token.url),
   openDeposits: state => state.deposits.filter(deposit => deposit.status == 'open'),
   openDepositsByToken: (state, getters) => token =>
     getters.openDeposits.filter(deposit => deposit.token == token.address)

@@ -1,6 +1,7 @@
 import account from './account'
 import audit from './audit'
 import auth from './auth'
+import checkout from './checkout'
 import coingecko from './coingecko'
 import funding from './funding'
 import network from './network'
@@ -13,6 +14,7 @@ export default {
   account,
   audit,
   auth,
+  checkout,
   coingecko,
   funding,
   network,
