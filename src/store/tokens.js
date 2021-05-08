@@ -119,7 +119,9 @@ const getters = {
   tokensByAddress: state =>
     state.tokens.reduce((acc, token) => Object.assign({[token.address]: token}, acc), {}),
   tokensByCode: state =>
-    state.tokens.reduce((acc, token) => Object.assign({[token.code]: token}, acc), {})
+    state.tokens.reduce((acc, token) => Object.assign({[token.code]: token}, acc), {}),
+  tokensByUrl: state =>
+    state.tokens.reduce((acc, token) => Object.assign({[token.url]: token}, acc), {})
 }
 
 const actions = {
