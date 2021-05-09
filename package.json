@@ -30,12 +30,9 @@
     "@vue/cli-plugin-vuex": "^4.5.11",
     "@vue/cli-service": "^4.5.11",
     "@vue/compiler-sfc": "^3.0.5",
-    "@vue/eslint-config-prettier": "^6.0.0",
     "@vue/test-utils": "^1.1.2",
     "babel-eslint": "^10.1.0",
     "eslint": "^7.18.0",
-    "eslint-config-prettier": "^8.1.0",
-    "eslint-plugin-prettier": "^3.3.1",
     "eslint-plugin-vue": "^7.5.0",
     "prettier": "^1.19.1",
     "vue-jest": "^3.0.7",
@@ -47,9 +44,8 @@
       "node": true
     },
     "extends": [
-      "eslint:recommended",
       "plugin:vue/essential",
-      "plugin:prettier/recommended"
+      "eslint:recommended"
     ],
     "rules": {},
     "parserOptions": {
@@ -91,12 +87,6 @@
   ],
   "jest": {
     "preset": "@vue/cli-plugin-unit-jest"
-  },
-  "prettier": {
-    "singleQuote": true,
-    "semi": false,
-    "bracketSpacing": false,
-    "printWidth": 99
   },
   "license": "MIT"
 }
