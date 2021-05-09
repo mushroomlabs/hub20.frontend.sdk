@@ -4,18 +4,21 @@ import {formattedAmount} from '../filters'
 
 export const TokenMixin = {
   computed: {
-    ...mapGetters('tokens', ['tokensByAddress']),
+    ...mapGetters('tokens', ['tokensByAddress', 'tokensByUrl']),
     tokenOptions() {
-      return Object.values(this.tokensByAddress).map(token => ({
-        value: token.address,
+      return Object.values(this.tokensByUrl).map(token => ({
+        value: token.url,
         text: token.code
       }))
     }
   },
   filters: {formattedAmount},
   methods: {
-    getToken(tokenAddress) {
+    getTokenByAddress(tokenAddress) {
       return this.tokensByAddress[tokenAddress]
+    },
+    getTokenByUrl(tokenUrl) {
+      return this.tokensByUrl[tokenUrl]
     }
   }
 }

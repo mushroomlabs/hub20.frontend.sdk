@@ -3,13 +3,13 @@
     <div v-if="paymentRequest.amount" class="amount-total">
       <span>Requested Amount: </span>
       <span class="amount-value">
-        {{ paymentRequest.amount | formattedAmount(paymentRequest.token) }}
+        {{ paymentRequest.amount | formattedAmount(token) }}
       </span>
     </div>
 
     <div v-if="paymentRequest.amount" class="amount-due">
       <span>Pending amount Amount: </span>
-      <span class="amount-value">{{ amountDue | formattedAmount(paymentRequest.token) }}</span>
+      <span class="amount-value">{{ amountDue | formattedAmount(token) }}</span>
     </div>
 
     <div class="payments">
@@ -38,6 +38,9 @@ export default {
     }
   },
   computed: {
+    token() {
+      return this.getTokenByUrl(this.paymentRequest.token)
+    },
     payments() {
       return this.paymentRequest.payments
     },
@@ -45,7 +48,7 @@ export default {
       return this.payments.length > 0
     },
     amountDue() {
-      return 2
+      return this.paymentRequest.amount
     }
   }
 }

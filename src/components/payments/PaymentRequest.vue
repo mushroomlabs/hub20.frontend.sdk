@@ -6,7 +6,7 @@
         v-for="route in openRoutes"
         :value="route.type"
         :class="{
-          active: !hasMultipleRoutes || route.type == (selectedRoute && selectedRoute.type)
+          active: !hasMultipleRoutes || route.type == (selectedRoute && selectedRoute.type),
         }"
         @click="selectRoute(route)"
         :key="route.type"
@@ -19,7 +19,7 @@
       v-for="route in openRoutes"
       :route="route"
       :token="token"
-      :amount="paymentRequest.amount"
+      :amount="pendingAmountDue"
       :key="route.type"
       :selected="!hasMultipleRoutes || route == selectedRoute"
     />
@@ -28,6 +28,7 @@
 </template>
 
 <script>
+import Decimal from 'decimal.js-light'
 import {mapGetters} from 'vuex'
 
 import PaymentRoute from './PaymentRoute'
@@ -39,16 +40,16 @@ export default {
   mixins: [TokenMixin],
   components: {
     PaymentRoute,
-    PaymentTracker
+    PaymentTracker,
   },
   props: {
     paymentRequest: {
-      type: Object
-    }
+      type: Object,
+    },
   },
   data() {
     return {
-      selectedRoute: null
+      selectedRoute: null,
     }
   },
   computed: {
@@ -57,19 +58,29 @@ export default {
       return this.openRoutes.length > 1
     },
     token() {
-      return this.getToken(this.paymentRequest.token)
+      return this.getTokenByUrl(this.paymentRequest.token)
     },
     openRoutes() {
       return this.paymentRequest
         ? this.paymentRequest.routes.filter(route => this.isOpenRoute(route))
         : []
-    }
+    },
+    pendingAmountDue() {
+      if (!this.paymentRequest) return null
+      if (!this.paymentRequest.amount) return null
+
+      const received = this.paymentRequest.payments.reduce(
+        (acc, payment) => acc.sum(Decimal(payment)),
+        Decimal(0)
+      )
+      return Decimal(this.paymentRequest.amount).sub(received)
+    },
   },
   methods: {
     routeDisplayName(route) {
       return {
         blockchain: 'On-Chain',
-        raiden: 'Raiden'
+        raiden: 'Raiden',
       }[route.type]
     },
     selectRoute(route) {
@@ -80,10 +91,10 @@ export default {
         return this.currentBlock <= route.expiration_block
       }
       return true
-    }
+    },
   },
   mounted() {
     this.selectRoute(this.openRoutes.length >= 1 ? this.openRoutes[0] : null)
-  }
+  },
 }
 </script>
