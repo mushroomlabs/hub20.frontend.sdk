@@ -10,5 +10,8 @@ export default {
       external_identifier: externalIdentifier
     }
     return this._client.post('/checkout', payload)
+  },
+  fetch(checkoutId) {
+    return this._client.get(`/checkout/${checkoutId}`)
   }
 }

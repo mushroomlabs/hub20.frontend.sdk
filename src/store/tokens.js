@@ -116,6 +116,7 @@ const initialState = () => ({
 })
 
 const getters = {
+  listedTokens: state => state.tokens,
   tokensByAddress: state =>
     state.tokens.reduce((acc, token) => Object.assign({[token.address]: token}, acc), {}),
   tokensByCode: state =>

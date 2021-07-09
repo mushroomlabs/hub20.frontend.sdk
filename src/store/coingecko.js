@@ -12,7 +12,7 @@ const initialState = () => ({
   tokens: [],
   exchangeRates: {},
   baseCurrency: 'USD',
-             tokenLogoMap: {},
+  tokenLogoMap: {},
 })
 
 const getters = {
@@ -40,12 +40,12 @@ const mutations = {
   },
   [COINGECKO_TOKEN_SET_LOGO_URL](state, {token, url}) {
     Vue.set(state.tokenLogoMap, token.address, url)
-  }
+  },
 }
 
 const actions = {
-  setBaseCurrency({commit}, currencyCode)  {
-    commit(EXCHANGE_RATE_SET_BASE_CURRENCY, currencyCode)
+  setBaseCurrency({commit}, currencyCode) {
+    return commit(EXCHANGE_RATE_SET_BASE_CURRENCY, currencyCode)
   },
   fetchCoingeckoTokenList({commit}) {
     return client

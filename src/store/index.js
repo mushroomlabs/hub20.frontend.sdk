@@ -2,7 +2,7 @@ import account from './account'
 import audit from './audit'
 import auth from './auth'
 import coingecko from './coingecko'
-import events from './events'
+import eventsModule, * as events from './events'
 import funding from './funding'
 import network from './network'
 import notifications from './notifications'
@@ -10,7 +10,7 @@ import password from './password'
 import server from './server'
 import signup from './signup'
 import stores from './stores'
-import tokens from './tokens'
+import tokenModule, * as tokens from './tokens'
 import users from './users'
 import web3 from './web3'
 
@@ -38,8 +38,9 @@ export default {
   server,
   signup,
   stores,
-  tokens,
   users,
   web3,
-  EVENT_TYPES
+  EVENT_TYPES,
+  events: eventsModule,
+  tokens: tokenModule
 }

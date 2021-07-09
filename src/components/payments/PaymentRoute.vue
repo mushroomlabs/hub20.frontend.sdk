@@ -22,6 +22,8 @@
 </template>
 
 <script>
+import Decimal from 'decimal.js-light'
+
 import {mapGetters} from 'vuex'
 
 import {toWei} from '../../filters'
@@ -48,7 +50,7 @@ export default {
       required: false
     },
     amount: {
-      type: Number,
+      type: [Decimal, Object, Number],
       required: false
     },
     selected: {

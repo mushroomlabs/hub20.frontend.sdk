@@ -4,7 +4,7 @@ export default {
   _client: client,
   createDeposit(token) {
     return this._client.post('/deposits', {
-      token: token.address
+      token: token.url,
     })
   },
   getDeposits() {
@@ -16,7 +16,7 @@ export default {
   createPaymentOrder(token, amount) {
     return this._client.post('/payment/orders', {
       amount: amount,
-      token: token.address
+      token: token.address,
     })
   },
   getPaymentOrder(orderId) {
@@ -32,8 +32,8 @@ export default {
     let payload = {
       amount: amount,
       token: token.address,
-      ...options
+      ...options,
     }
     return this._client.post('/transfers', payload)
-  }
+  },
 }

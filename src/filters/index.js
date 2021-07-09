@@ -1,8 +1,8 @@
-export const toWei = function(token, amount) {
+export const toWei = function (token, amount) {
   return Math.floor(amount * 10 ** token.decimals)
 }
 
-export const formattedAmount = function(amount, token) {
+export const formattedAmount = function (amount, token) {
   if (amount == 0) {
     return '0'
   }
@@ -12,21 +12,21 @@ export const formattedAmount = function(amount, token) {
   return `${formattedAmount} ${token.code}`
 }
 
-export const formattedCurrency = function(amount, currencyCode) {
+export const formattedCurrency = function (amount, currencyCode) {
   return new Intl.NumberFormat([], {style: 'currency', currency: currencyCode}).format(amount)
 }
 
-export const humanizeReference = function(referenceType, transactionType) {
+export const humanizeReference = function (referenceType, transactionType) {
   const credits = {
     transfer: 'Transfer Received',
     transferexecution: 'Transfer Received',
-    paymentconfirmation: 'Payment Received'
+    paymentconfirmation: 'Payment Received',
   }
 
   const debits = {
     transfer: 'Transfer Submitted',
     transferexecution: 'Transfer Sent',
-    paymentconfirmation: 'Payment Sent'
+    paymentconfirmation: 'Payment Sent',
   }
 
   if (transactionType == 'credit') {

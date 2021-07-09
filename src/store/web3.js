@@ -1,7 +1,11 @@
+import {ethers} from 'ethers'
+
 export const WEB3_CONNECT_BEGIN = 'WEB3_CONNECT_BEGIN'
 export const WEB3_CONNECT_FAILURE = 'WEB3_CONNECT_FAILURE'
 export const WEB3_TRANSFER_FAILURE = 'WEB3_TRANSFER_FAILURE'
 export const WEB3_ADD_TRANSACTION = 'WEB3_ADD_TRANSACTION'
+export const WEB3_SET_ACCOUNT = 'WEB3_SET_ACCOUNT'
+export const WEB3_RESET_ACCOUNT = 'WEB3_RESET_ACCOUNT'
 
 const EIP20_ABI = [
   {
@@ -11,35 +15,35 @@ const EIP20_ABI = [
     outputs: [
       {
         name: '',
-        type: 'string'
-      }
+        type: 'string',
+      },
     ],
     payable: false,
     stateMutability: 'view',
-    type: 'function'
+    type: 'function',
   },
   {
     constant: false,
     inputs: [
       {
         name: '_spender',
-        type: 'address'
+        type: 'address',
       },
       {
         name: '_value',
-        type: 'uint256'
-      }
+        type: 'uint256',
+      },
     ],
     name: 'approve',
     outputs: [
       {
         name: '',
-        type: 'bool'
-      }
+        type: 'bool',
+      },
     ],
     payable: false,
     stateMutability: 'nonpayable',
-    type: 'function'
+    type: 'function',
   },
   {
     constant: true,
@@ -48,39 +52,39 @@ const EIP20_ABI = [
     outputs: [
       {
         name: '',
-        type: 'uint256'
-      }
+        type: 'uint256',
+      },
     ],
     payable: false,
     stateMutability: 'view',
-    type: 'function'
+    type: 'function',
   },
   {
     constant: false,
     inputs: [
       {
         name: '_from',
-        type: 'address'
+        type: 'address',
       },
       {
         name: '_to',
-        type: 'address'
+        type: 'address',
       },
       {
         name: '_value',
-        type: 'uint256'
-      }
+        type: 'uint256',
+      },
     ],
     name: 'transferFrom',
     outputs: [
       {
         name: '',
-        type: 'bool'
-      }
+        type: 'bool',
+      },
     ],
     payable: false,
     stateMutability: 'nonpayable',
-    type: 'function'
+    type: 'function',
   },
   {
     constant: true,
@@ -89,31 +93,31 @@ const EIP20_ABI = [
     outputs: [
       {
         name: '',
-        type: 'uint8'
-      }
+        type: 'uint8',
+      },
     ],
     payable: false,
     stateMutability: 'view',
-    type: 'function'
+    type: 'function',
   },
   {
     constant: true,
     inputs: [
       {
         name: '_owner',
-        type: 'address'
-      }
+        type: 'address',
+      },
     ],
     name: 'balanceOf',
     outputs: [
       {
         name: 'balance',
-        type: 'uint256'
-      }
+        type: 'uint256',
+      },
     ],
     payable: false,
     stateMutability: 'view',
-    type: 'function'
+    type: 'function',
   },
   {
     constant: true,
@@ -122,63 +126,63 @@ const EIP20_ABI = [
     outputs: [
       {
         name: '',
-        type: 'string'
-      }
+        type: 'string',
+      },
     ],
     payable: false,
     stateMutability: 'view',
-    type: 'function'
+    type: 'function',
   },
   {
     constant: false,
     inputs: [
       {
         name: '_to',
-        type: 'address'
+        type: 'address',
       },
       {
         name: '_value',
-        type: 'uint256'
-      }
+        type: 'uint256',
+      },
     ],
     name: 'transfer',
     outputs: [
       {
         name: '',
-        type: 'bool'
-      }
+        type: 'bool',
+      },
     ],
     payable: false,
     stateMutability: 'nonpayable',
-    type: 'function'
+    type: 'function',
   },
   {
     constant: true,
     inputs: [
       {
         name: '_owner',
-        type: 'address'
+        type: 'address',
       },
       {
         name: '_spender',
-        type: 'address'
-      }
+        type: 'address',
+      },
     ],
     name: 'allowance',
     outputs: [
       {
         name: '',
-        type: 'uint256'
-      }
+        type: 'uint256',
+      },
     ],
     payable: false,
     stateMutability: 'view',
-    type: 'function'
+    type: 'function',
   },
   {
     payable: true,
     stateMutability: 'payable',
-    type: 'fallback'
+    type: 'fallback',
   },
   {
     anonymous: false,
@@ -186,21 +190,21 @@ const EIP20_ABI = [
       {
         indexed: true,
         name: 'owner',
-        type: 'address'
+        type: 'address',
       },
       {
         indexed: true,
         name: 'spender',
-        type: 'address'
+        type: 'address',
       },
       {
         indexed: false,
         name: 'value',
-        type: 'uint256'
-      }
+        type: 'uint256',
+      },
     ],
     name: 'Approval',
-    type: 'event'
+    type: 'event',
   },
   {
     anonymous: false,
@@ -208,108 +212,92 @@ const EIP20_ABI = [
       {
         indexed: true,
         name: 'from',
-        type: 'address'
+        type: 'address',
       },
       {
         indexed: true,
         name: 'to',
-        type: 'address'
+        type: 'address',
       },
       {
         indexed: false,
         name: 'value',
-        type: 'uint256'
-      }
+        type: 'uint256',
+      },
     ],
     name: 'Transfer',
-    type: 'event'
-  }
+    type: 'event',
+  },
 ]
-
-function makeTransferData(web3, amount, tokenAddress, recipientAddress) {
-  let contract = web3.eth.contract(EIP20_ABI).at(tokenAddress)
-  return contract.transfer.getData(recipientAddress, amount)
-}
 
 const initialState = () => ({
   selectedAccount: null,
-  web3Browser: null,
-  connected: false,
   transactions: [],
-  error: null
+  error: null,
 })
 
 const getters = {
-  hasWeb3Provider() {
-    return window.ethereum || window.web3
-  },
-  connectedNetwork: state =>
-    state.connected && state.web3Browser && state.web3Browser.version.network,
-  isConnected: state => state.connected
+  hasWeb3: () => Boolean(typeof window.ethereum !== 'undefined'),
+  isMetamask: (_, getters) => getters.hasWeb3 && window.ethereum.isMetamask,
 }
 
 const actions = {
-  enableWeb3({commit}) {
-    if (typeof window.ethereum !== 'undefined') {
-      window.ethereum
-        .request({method: 'eth_requestAccounts'})
-        .then(accounts =>
-          commit(WEB3_CONNECT_BEGIN, {w3: window.ethereum, accountAddress: accounts[0]})
-        )
-        .catch(error => commit(WEB3_CONNECT_FAILURE, error))
+  setAccount({commit}, account) {
+    commit(WEB3_SET_ACCOUNT, account)
+  },
+  makeTransfer({dispatch}, {token, amount, recipientAddress}) {
+    if (parseInt(token.address)) {
+      return dispatch('sendErc20', {token, recipientAddress, amount})
+    } else {
+      return dispatch('sendEther', {recipientAddress, amount})
     }
   },
-  requestTransfer({commit, state}, {token, amount, recipientAddress}) {
-    let w3 = state.web3Browser
-
-    if (!w3) {
-      commit(WEB3_TRANSFER_FAILURE, 'Web wallet is not connected')
-      return
-    }
-
-    let transactionData = {
-      from: state.selectedAccount
-    }
-
-    if (!token.address) {
-      // ETH transfer
-      transactionData.to = recipientAddress
-      transactionData.value = amount
-    } else {
-      transactionData.to = token.address
-      transactionData.data = makeTransferData(w3, amount, token.address, recipientAddress)
-    }
-
-    w3.eth.sendTransaction(transactionData).then((error, tx) => {
-      if (tx) {
-        commit(WEB3_ADD_TRANSACTION, transactionData)
-      }
-      if (error) {
-        commit(WEB3_TRANSFER_FAILURE, error)
-      }
-    })
-  }
+  sendEther({commit, state}, {amount, recipientAddress}) {
+    const provider = new ethers.providers.Web3Provider(window.ethereum)
+    const params = [
+      {
+        from: state.selectedAccount,
+        to: recipientAddress,
+        value: ethers.utils.parseUnits(amount.toFixed(18), 'ether').toHexString(),
+      },
+    ]
+    return provider
+      .send('eth_sendTransaction', params)
+      .then(tx => commit(WEB3_ADD_TRANSACTION, tx))
+  },
+  sendErc20({commit}, {token, amount, recipientAddress}) {
+    const weiAmount = ethers.utils.parseUnits(amount.toFixed(token.decimals), token.decimals)
+    const provider = new ethers.providers.Web3Provider(window.ethereum)
+    const signer = provider.getSigner()
+    const erc20Contract = new ethers.Contract(token.address, EIP20_ABI, provider)
+    const erc20WithSigner = erc20Contract.connect(signer)
+    return erc20WithSigner
+      .transfer(recipientAddress, weiAmount)
+      .then(tx => commit(WEB3_ADD_TRANSACTION, tx))
+  },
 }
 
 const mutations = {
-  [WEB3_CONNECT_BEGIN](state, {w3, accountAddress}) {
-    state.web3Browser = w3
+  [WEB3_SET_ACCOUNT](state, account) {
+    state.selectedAccount = account
+  },
+  [WEB3_RESET_ACCOUNT](state) {
+    state.selectedAccount = null
+  },
+  [WEB3_CONNECT_BEGIN](state, accountAddress) {
     state.selectedAddress = accountAddress
-    state.connected = true
     state.error = null
   },
   [WEB3_CONNECT_FAILURE](state, error) {
-    state.web3Browser = null
     state.selectedAddress = null
-    state.connected = false
     state.error = error
   },
   [WEB3_TRANSFER_FAILURE](state, error) {
     state.error = error
   },
-  [WEB3_ADD_TRANSACTION](state, transactionData) {
-    state.transactions.push(transactionData)
-  }
+  [WEB3_ADD_TRANSACTION](state, transactionHash) {
+    state.transactions.push(transactionHash)
+  },
 }
 
 export default {
@@ -317,5 +305,5 @@ export default {
   state: initialState(),
   actions,
   getters,
-  mutations
+  mutations,
 }

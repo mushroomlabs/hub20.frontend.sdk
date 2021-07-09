@@ -8,14 +8,18 @@
     </div>
 
     <div v-if="paymentRequest.amount" class="amount-due">
-      <span>Pending amount Amount: </span>
-      <span class="amount-value">{{ amountDue | formattedAmount(token) }}</span>
+      <span>Pending Amount: </span>
+      <span class="amount-value">{{ pendingAmountDue | formattedAmount(token) }}</span>
     </div>
 
     <div class="payments">
       <h5 v-if="hasPayments">Received Payments</h5>
       <ul v-if="hasPayments">
-        <li :class="{confirmed: payment.confirmed}" v-for="payment in payments" :key="payment.id">
+        <li
+          :class="{confirmed: payment.confirmed}"
+          v-for="payment in payments"
+          :key="payment.id"
+        >
           <span class="amount-value">{{
             payment.amount | formattedAmount(payment.currency)
           }}</span>
@@ -28,14 +32,19 @@
 </template>
 
 <script>
+import Decimal from 'decimal.js-light'
 import TokenMixin from '../../mixins/tokens'
 
 export default {
   mixins: [TokenMixin],
   props: {
     paymentRequest: {
-      type: Object
-    }
+      type: Object,
+    },
+    pendingAmountDue: {
+      type: [Decimal, Object, Number],
+      required: false,
+    },
   },
   computed: {
     token() {
@@ -47,9 +56,6 @@ export default {
     hasPayments() {
       return this.payments.length > 0
     },
-    amountDue() {
-      return this.paymentRequest.amount
-    }
-  }
+  },
 }
 </script>

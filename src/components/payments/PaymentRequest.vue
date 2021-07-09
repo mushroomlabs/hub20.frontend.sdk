@@ -23,7 +23,7 @@
       :key="route.type"
       :selected="!hasMultipleRoutes || route == selectedRoute"
     />
-    <PaymentTracker :paymentRequest="paymentRequest" />
+    <PaymentTracker :paymentRequest="paymentRequest" :pendingAmountDue="pendingAmountDue" />
   </div>
 </template>
 
@@ -54,6 +54,7 @@ export default {
   },
   computed: {
     ...mapGetters('network', ['currentBlock']),
+    ...mapGetters(['pendingAmountDue']),
     hasMultipleRoutes() {
       return this.openRoutes.length > 1
     },
@@ -64,16 +65,6 @@ export default {
       return this.paymentRequest
         ? this.paymentRequest.routes.filter(route => this.isOpenRoute(route))
         : []
-    },
-    pendingAmountDue() {
-      if (!this.paymentRequest) return null
-      if (!this.paymentRequest.amount) return null
-
-      const received = this.paymentRequest.payments.reduce(
-        (acc, payment) => acc.sum(Decimal(payment)),
-        Decimal(0)
-      )
-      return Decimal(this.paymentRequest.amount).sub(received)
     },
   },
   methods: {
