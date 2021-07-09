@@ -22,7 +22,19 @@ const initialState = () => ({
 
 const getters = {
   isConnected: state => Boolean(state.rootUrl),
-  serverDomain: state => state.rootUrl && new URL(state.rootUrl).origin
+  serverDomain: state => state.rootUrl && new URL(state.rootUrl).origin,
+  websocketRootUrl: state => {
+    if (!state.rootUrl) {
+      return null
+    }
+
+    let url = new URL(state.rootUrl)
+    let ws_protocol = url.protocol == 'http:' ? 'ws:' : 'wss:'
+    url.protocol = ws_protocol
+    return url.origin
+  },
+  eventWebsocketUrl: (_, getters) => `${getters.websocketRootUrl}/ws/events`,
+  checkoutEventWebsocketUrl: (_, getters) => checkoutId => `${getters.websocketRootUrl}/ws/checkout/${checkoutId}`
 }
 
 const actions = {

@@ -2,12 +2,13 @@ import axios from 'axios'
 
 export const API_ROOT_URL = 'https://api.coingecko.com/api/v3'
 export const TOKEN_LIST_URL = 'https://tokens.coingecko.com/uniswap/all.json'
-export const ETHEREUM_LOGO_URL = 'https://assets.coingecko.com/coins/images/279/large/ethereum.png'
+export const ETHEREUM_LOGO_URL =
+  'https://assets.coingecko.com/coins/images/279/large/ethereum.png'
 export const client = axios.create({
   headers: {
     Accept: 'application/json',
-    'Content-Type': 'application/json'
-  }
+    'Content-Type': 'application/json',
+  },
 })
 
 export default {
@@ -32,10 +33,14 @@ export default {
     })
   },
   getTokenLogoUrl(token) {
+    if (!token.address) {
+      return ETHEREUM_LOGO_URL
+    }
+
     const url = `${API_ROOT_URL}/coins/ethereum/contract/${token.address}`
     return client.get(url).then(({data}) => {
       const logoUrl = data && data.image && data.image.large
       return Promise.resolve(logoUrl || ETHEREUM_LOGO_URL)
     })
-  }
+  },
 }

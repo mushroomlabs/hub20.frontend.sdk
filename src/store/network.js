@@ -33,7 +33,7 @@ const actions = {
       commit(NETWORK_SET_ETHEREUM_NETWORK, data.ethereum.network)
       commit(NETWORK_SET_ETHEREUM_ONLINE_STATUS, data.ethereum.online)
       commit(NETWORK_SET_ETHEREUM_SYNCED_STATUS, data.ethereum.synced)
-      commit(NETWORK_SET_ETHEREUM_CURRENT_BLOCK, data.ethereum.highest_block)
+      commit(NETWORK_SET_ETHEREUM_CURRENT_BLOCK, data.ethereum.height)
     })
   },
   initialize({dispatch}) {
