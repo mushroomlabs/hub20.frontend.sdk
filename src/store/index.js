@@ -25,12 +25,14 @@ export const EVENT_TYPES = {
   RAIDEN_ROUTE_EXPIRED: 'raiden.payment_route.expired'
 }
 
+export {events, tokens}
+
+
 export default {
   account,
   audit,
   auth,
   coingecko,
-  events,
   funding,
   network,
   notifications,

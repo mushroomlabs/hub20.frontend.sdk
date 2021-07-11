@@ -28,7 +28,6 @@
 </template>
 
 <script>
-import Decimal from 'decimal.js-light'
 import {mapGetters} from 'vuex'
 
 import PaymentRoute from './PaymentRoute'
