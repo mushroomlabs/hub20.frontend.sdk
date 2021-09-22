@@ -26,4 +26,5 @@ release:
     - npm publish
 
   only:
-    - master
+    - tags
+    - triggers
