@@ -19,22 +19,21 @@ const initialStoreData = {
 }
 
 const initialState = () => ({
-  collection: {
-    data: [],
-    error: null
-  },
-  edit: {
-    data: null,
-    error: null
-  }
+  userStores: [],
+  editingData: null,
+  submissionErrors: null,
+  fetchError: null
 })
 
 const getters = {
-  stores: state => state.collection.data,
+  stores: state => state.userStores,
   storesById: state =>
-    state.collection.data.reduce((acc, store) => Object.assign({[store.id]: store}, acc), {}),
-  storeEditData: state => state.edit.data,
-  storeEditError: state => state.edit.error
+    state.userStores.reduce((acc, store) => Object.assign({[store.id]: store}, acc), {}),
+  submissionErrorMessages: state => ({
+    name: state && state.submissionErrors && state.submissionErrors.name && state.submissionErrors.name[0],
+    siteUrl: state && state.submissionErrors && state.submissionErrors.site_url && state.submissionErrors.site_url[0],
+    acceptedTokens: state && state.submissionErrors && state.submissionErrors.accepted_currencies && state.submissionErrors.accepted_currencies[0],
+  }),
 }
 
 const actions = {
@@ -87,37 +86,37 @@ const mutations = {
     Object.assign(state, initialState())
   },
   [STORE_COLLECTION_SETUP_FAILURE](state, error) {
-    state.collection.error = error
+    state.fetchError = error
   },
   [STORE_COLLECTION_SETUP_SUCCESS](state) {
-    state.collection.error = null
+    state.fetchError = null
   },
   [STORE_EDIT_BEGIN](state, storeData) {
-    state.edit.data = storeData || initialStoreData
+    state.editingData = storeData || initialStoreData
   },
   [STORE_EDIT_SUCCESS](state) {
-    state.edit.error = null
+    state.submissionErrors = null
   },
   [STORE_EDIT_FAILURE](state, error) {
-    state.edit.error = error.data
+    state.submissionErrors = error.response.data
   },
   [STORE_EDIT_SET_NAME](state, name) {
-    if (state.edit.data) {
-      state.edit.data.name = name
+    if (state.editingData) {
+      state.editingData.name = name
     }
   },
   [STORE_EDIT_SET_URL](state, siteUrl) {
-    if (state.edit.data) {
-      state.edit.data.site_url = siteUrl
+    if (state.editingData) {
+      state.editingData.site_url = siteUrl
     }
   },
   [STORE_EDIT_SET_ACCEPTED_TOKENS](state, acceptedTokens) {
-    if (state.edit.data) {
-      state.edit.data.accepted_currencies = acceptedTokens
+    if (state.editingData) {
+      state.editingData.accepted_currencies = acceptedTokens
     }
   },
   [STORE_COLLECTION_SET](state, data) {
-    state.collection.data = data
+    state.userStores = data
   },
   [STORE_RESET_STATE](state) {
     Object.assign(state, initialState())
