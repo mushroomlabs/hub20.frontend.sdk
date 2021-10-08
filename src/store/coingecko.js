@@ -81,7 +81,7 @@ const actions = {
         .getTokenLogoUrl(coingeckoToken)
         .then(url => commit(COINGECKO_TOKEN_SET_LOGO_URL, {token, url}))
     } else {
-      commit(COINGECKO_TOKEN_SET_LOGO_URL, {token, ETHEREUM_LOGO_URL})
+      commit(COINGECKO_TOKEN_SET_LOGO_URL, {token, url: ETHEREUM_LOGO_URL})
     }
   },
 }
