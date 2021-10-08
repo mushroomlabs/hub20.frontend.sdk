@@ -1,6 +1,6 @@
 {
   "name": "hub20-vue-sdk",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "private": false,
   "scripts": {
     "build": "vue-cli-service build --target lib --name Hub20 --entry src/index.js",
