@@ -37,10 +37,10 @@ const actions = {
     })
   },
   initialize({dispatch}) {
-    dispatch('getStatus')
+    return dispatch('getStatus')
   },
   refresh({dispatch}) {
-    dispatch('getStatus')
+    return dispatch('getStatus')
   }
 }
 

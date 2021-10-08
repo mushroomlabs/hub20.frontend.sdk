@@ -135,7 +135,7 @@ const actions = {
       .catch(error => commit(TOKEN_SETUP_FAILURE, error))
   },
   initialize({dispatch}) {
-    dispatch('fetchTokens')
+    return dispatch('fetchTokens')
   }
 }
 

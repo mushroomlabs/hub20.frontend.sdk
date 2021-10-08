@@ -3,7 +3,7 @@ import PaymentRequest from './payments/PaymentRequest'
 
 let components = {
   PaymentRequest,
-  EtherscanLink
+  EtherscanLink,
 }
 
 export default components
