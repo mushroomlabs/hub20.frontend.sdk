@@ -16,6 +16,7 @@
     "qrcode": "^1.4.4",
     "semver": "^7.3.4",
     "vue": "^2.6.12",
+    "vue-clipboard2": "^0.3.3",
     "vuex": "^3.6.2"
   },
   "devDependencies": {
