@@ -1,6 +1,7 @@
 <template>
-  <div class="web3-transfer">
+  <div v-if="hasWeb3" class="web3-transfer">
     <div class="amount-selector" v-if="!amount">
+      <span>Amount to deposit:</span>
       <input
         v-model="transferAmount"
         type="number"
@@ -9,7 +10,7 @@
         step="any"
       />
     </div>
-    <button v-if="hasWeb3" :disabled="!transferAmount" @click="startTransfer()">
+    <button :disabled="!transferAmount" @click="startTransfer()">
       <slot>Pay {{ token.code }} with wallet</slot>
     </button>
   </div>
@@ -55,6 +56,7 @@ export default {
           amount: Decimal(this.transferAmount),
           recipientAddress: this.recipientAddress,
         }))
+      .catch((error) => console.error(error.message))
     }
   }
 }

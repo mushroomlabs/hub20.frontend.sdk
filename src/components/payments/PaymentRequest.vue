@@ -21,7 +21,7 @@
       :token="token"
       :amount="pendingAmountDue"
       :key="route.type"
-      :selected="!hasMultipleRoutes || route == selectedRoute"
+      :selected="isSelectedRoute(route)"
     />
     <PaymentTracker :paymentRequest="paymentRequest" :pendingAmountDue="pendingAmountDue" />
   </div>
@@ -53,7 +53,7 @@ export default {
   },
   computed: {
     ...mapGetters('network', ['currentBlock']),
-    ...mapGetters(['pendingAmountDue']),
+    ...mapGetters('checkout', ['pendingAmountDue']),
     hasMultipleRoutes() {
       return this.openRoutes.length > 1
     },
@@ -75,6 +75,13 @@ export default {
     },
     selectRoute(route) {
       this.selectedRoute = route
+    },
+    isSelectedRoute(route) {
+      if (!this.selectedRoute) {
+        return false
+      }
+
+      return route.type === this.selectedRoute.type
     },
     isOpenRoute(route) {
       if (route.type == 'blockchain') {

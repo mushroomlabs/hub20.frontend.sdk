@@ -1,12 +1,5 @@
 <template>
   <div class="payment-tracker">
-    <div v-if="paymentRequest.amount" class="amount-total">
-      <span>Requested Amount: </span>
-      <span class="amount-value">
-        {{ paymentRequest.amount | formattedAmount(token) }}
-      </span>
-    </div>
-
     <div v-if="paymentRequest.amount" class="amount-due">
       <span>Pending Amount: </span>
       <span class="amount-value">{{ pendingAmountDue | formattedAmount(token) }}</span>

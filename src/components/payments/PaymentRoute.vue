@@ -1,45 +1,49 @@
 <template>
-  <div class="payment-route" :class="{selected, expired}">
-    <QrCode :message="QrCodeMessage" />
-    <div class="payment-route-details">
-      <ClipboardCopier :value="route.address">Address: {{ route.address }}</ClipboardCopier>
-      <ClipboardCopier v-if="isRaidenRoute" :value="route.identifier"
-        >Payment Identifier: {{ route.identifier }}</ClipboardCopier
-      >
-    </div>
-    <PaymentRouteBlockchainTimer
-      v-if="isBlockchainRoute"
-      :created_on="route.start_block"
-      :expires_on="route.expiration_block"
-    />
+<div class="payment-route" :class="{selected, expired}">
+  <div class="payment-advice">
+    <slot>
+      <p>To complete payment, send {{ token.code }} as requested below:</p>
+    </slot>
+  </div>
+
+  <div class="payment-route-details">
+    <BlockchainPaymentRouteDetail v-if="isBlockchainRoute" :route="route" :amount="amount" :token="token"/>
+    <RaidenPaymentRouteDetail v-if="isRaidenRoute" :route="route" :amount="amount" :token="token" />
+  </div>
+
+  <div v-if="hasWeb3 && isBlockchainRoute" class="web3-wallet-display">
+    <span>Pay with Browser wallet</span>
     <Web3TransferButton
-      v-if="isBlockchainRoute"
       :token="token"
       :amount="amount"
       :recipientAddress="route.address"
-    />
+      />
   </div>
+
+  <div class="qr-code-display">
+    <span>Use QR Code</span>
+    <QrCode :message="QrCodeMessage" />
+  </div>
+
+</div>
 </template>
 
 <script>
 import Decimal from 'decimal.js-light'
-
 import {mapGetters} from 'vuex'
 
 import {toWei} from '../../filters'
-
-import ClipboardCopier from '../ClipboardCopier'
 import Web3TransferButton from '../web3/Web3TransferButton'
-
 import QrCode from './QrCode'
-import PaymentRouteBlockchainTimer from './PaymentRouteBlockchainTimer'
+import BlockchainPaymentRouteDetail from './routing/BlockchainPaymentRouteDetail'
+import RaidenPaymentRouteDetail from './routing/RaidenPaymentRouteDetail'
 
 export default {
   components: {
-    ClipboardCopier,
-    PaymentRouteBlockchainTimer,
+    BlockchainPaymentRouteDetail,
+    RaidenPaymentRouteDetail,
     QrCode,
-    Web3TransferButton
+    Web3TransferButton,
   },
   props: {
     route: {
@@ -67,6 +71,7 @@ export default {
   },
   computed: {
     ...mapGetters('network', ['currentBlock']),
+    ...mapGetters('web3', ['hasWeb3']),
     QrCodeMessage() {
       let protocol = {
         blockchain: 'ethereum',

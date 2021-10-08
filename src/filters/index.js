@@ -2,12 +2,13 @@ export const toWei = function (token, amount) {
   return Math.floor(amount * 10 ** token.decimals)
 }
 
-export const formattedAmount = function (amount, token) {
+export const formattedAmount = function (amount, token, maxDigits) {
   if (amount == 0) {
     return '0'
   }
 
-  let formatter = new Intl.NumberFormat([], {maximumSignificantDigits: token.decimals})
+  let maximumSignificantDigits = maxDigits || token.decimals
+  let formatter = new Intl.NumberFormat([], {maximumSignificantDigits})
   let formattedAmount = formatter.format(amount)
   return `${formattedAmount} ${token.code}`
 }
