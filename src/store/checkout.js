@@ -44,15 +44,17 @@ const getters = {
     let token = getters.paymentToken
     return (
       (token &&
-        getters.payments.filter(payment => payment.currency.address == token.address)) ||
+       getters.payments.filter(payment => payment.currency.address == token.address)) ||
       []
     )
   },
   totalAmountPaid: (state, getters) =>
     getters.payments.reduce((acc, payment) => acc + payment.amount, 0),
-  isPaid: (state, getters) => getters.totalAmountPaid >= getters.tokenAmountDue,
+  isConfirmed: state => state.checkout && state.checkout.status === 'confirmed',
   isExpired: state => state.checkout && state.checkout.status === 'expired',
-  isFinalized: state => state.checkout && state.checkout.status !== 'open',
+  isOpen: state => state.checkout && state.checkout.status === 'open',
+  isProcessing: state => state.checkout && state.checkout.status === 'paid',
+  isFinalized: state => state.checkout && ['expired', 'confirmed'].includes(state.checkout.status),
   tokenAmountDue: (state, getters, _, rootGetters) => token => {
     let exchangeRate = rootGetters['coingecko/exchangeRate'](token)
     let tokenAmount = getters.chargeAmount && getters.chargeAmount / exchangeRate
