@@ -1,11 +1,19 @@
+import ClipboardCopier from './ClipboardCopier'
 import EtherscanLink from './EtherscanLink'
-import PaymentRequest from './payments/PaymentRequest'
+import QrCode from './QrCode'
+import TokenLogo from './TokenLogo'
+import Payment from './payment'
+import Web3 from './web3'
 
 let components = {
-  PaymentRequest,
+  ClipboardCopier,
   EtherscanLink,
+  QrCode,
+  Payment,
+  Web3,
+  TokenLogo
 }
 
 export default components
 
-export {PaymentRequest, EtherscanLink}
+export {ClipboardCopier, EtherscanLink, QrCode, TokenLogo, Payment, Web3}
