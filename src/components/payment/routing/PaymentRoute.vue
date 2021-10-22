@@ -32,11 +32,13 @@
 import Decimal from 'decimal.js-light'
 import {mapGetters} from 'vuex'
 
-import {toWei} from '../../filters'
-import Web3TransferButton from '../web3/Web3TransferButton'
-import QrCode from './QrCode'
-import BlockchainPaymentRouteDetail from './routing/BlockchainPaymentRouteDetail'
-import RaidenPaymentRouteDetail from './routing/RaidenPaymentRouteDetail'
+import {toWei} from '../../../filters'
+import QrCode from '../../QrCode'
+
+import Web3TransferButton from '../../web3/Web3TransferButton'
+
+import BlockchainPaymentRouteDetail from './BlockchainPaymentRouteDetail'
+import RaidenPaymentRouteDetail from './RaidenPaymentRouteDetail'
 
 export default {
   components: {

@@ -30,12 +30,13 @@
 <script>
 import {mapGetters} from 'vuex'
 
-import PaymentRoute from './PaymentRoute'
+import TokenMixin from '../../../mixins/tokens'
+import PaymentRoute from '../routing/PaymentRoute'
 import PaymentTracker from './PaymentTracker'
 
-import TokenMixin from '../../mixins/tokens'
 
 export default {
+  name: 'payment-request',
   mixins: [TokenMixin],
   components: {
     PaymentRoute,
