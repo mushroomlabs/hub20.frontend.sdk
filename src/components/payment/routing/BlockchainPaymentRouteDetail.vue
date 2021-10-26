@@ -1,9 +1,5 @@
 <template>
   <div class="payment-route-detail blockchain">
-    <PaymentRouteBlockchainTimer
-      :created_on="route.start_block"
-      :expires_on="route.expiration_block"
-    />
     <dl>
       <dt v-if="amount">Amount</dt>
       <dd v-if="amount">
@@ -23,13 +19,11 @@
 
 <script>
 import Decimal from 'decimal.js-light'
-import PaymentRouteBlockchainTimer from './PaymentRouteBlockchainTimer'
 import ClipboardCopier from '../../ClipboardCopier'
 
 export default {
   components: {
     ClipboardCopier,
-    PaymentRouteBlockchainTimer,
   },
   props: {
     route: Object,
