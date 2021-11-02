@@ -23,23 +23,20 @@
       :key="route.type"
       :selected="isSelectedRoute(route)"
     />
-    <PaymentTracker :paymentRequest="paymentRequest" :pendingAmountDue="pendingAmountDue" />
   </div>
 </template>
 
 <script>
 import {mapGetters} from 'vuex'
 
-import PaymentRoute from './PaymentRoute'
-import PaymentTracker from './PaymentTracker'
-
-import TokenMixin from '../../mixins/tokens'
+import TokenMixin from '../../../mixins/tokens'
+import PaymentRoute from '../routing/PaymentRoute'
 
 export default {
+  name: 'payment-request',
   mixins: [TokenMixin],
   components: {
     PaymentRoute,
-    PaymentTracker,
   },
   props: {
     paymentRequest: {

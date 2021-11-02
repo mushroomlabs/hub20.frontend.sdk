@@ -1,17 +1,11 @@
 <template>
 <div class="payment-route" :class="{selected, expired}">
-  <div class="payment-advice">
-    <slot>
-      <p>To complete payment, send {{ token.code }} as requested below:</p>
-    </slot>
-  </div>
-
   <div class="payment-route-details">
     <BlockchainPaymentRouteDetail v-if="isBlockchainRoute" :route="route" :amount="amount" :token="token"/>
     <RaidenPaymentRouteDetail v-if="isRaidenRoute" :route="route" :amount="amount" :token="token" />
   </div>
 
-  <div v-if="hasWeb3 && isBlockchainRoute" class="web3-wallet-display">
+  <div v-if="hasWeb3 && isBlockchainRoute" class="web3-wallet-display wallet-option">
     <span>Pay with Browser wallet</span>
     <Web3TransferButton
       :token="token"
@@ -20,11 +14,12 @@
       />
   </div>
 
-  <div class="qr-code-display">
+  <div class="qr-code-display wallet-option">
     <span>Use QR Code</span>
     <QrCode :message="QrCodeMessage" />
   </div>
 
+  <BlockchainPaymentRouteCountdown :route="route" v-if="isBlockchainRoute" />
 </div>
 </template>
 
@@ -32,14 +27,18 @@
 import Decimal from 'decimal.js-light'
 import {mapGetters} from 'vuex'
 
-import {toWei} from '../../filters'
-import Web3TransferButton from '../web3/Web3TransferButton'
-import QrCode from './QrCode'
-import BlockchainPaymentRouteDetail from './routing/BlockchainPaymentRouteDetail'
-import RaidenPaymentRouteDetail from './routing/RaidenPaymentRouteDetail'
+import {toWei} from '../../../filters'
+import QrCode from '../../QrCode'
+
+import Web3TransferButton from '../../web3/Web3TransferButton'
+
+import BlockchainPaymentRouteDetail from './BlockchainPaymentRouteDetail'
+import RaidenPaymentRouteDetail from './RaidenPaymentRouteDetail'
+import BlockchainPaymentRouteCountdown from './BlockchainPaymentRouteCountdown'
 
 export default {
   components: {
+    BlockchainPaymentRouteCountdown,
     BlockchainPaymentRouteDetail,
     RaidenPaymentRouteDetail,
     QrCode,
