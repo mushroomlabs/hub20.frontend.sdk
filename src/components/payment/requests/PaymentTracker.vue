@@ -1,10 +1,6 @@
 <template>
   <div class="payment-tracker">
     <IncomingPaymentList :payments="paymentRequest.payments" />
-    <div v-if="hasPendingAmount" class="amount-due">
-      <span>Due: </span>
-      <span class="amount-value">{{ pendingAmountDue | formattedAmount(token) }}</span>
-    </div>
   </div>
 </template>
 

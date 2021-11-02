@@ -14,6 +14,9 @@ export const formattedAmount = function (amount, token, maxDigits) {
 }
 
 export const formattedCurrency = function (amount, currencyCode) {
+  if (!currencyCode) {
+    return null
+  }
   return new Intl.NumberFormat([], {style: 'currency', currency: currencyCode}).format(amount)
 }
 

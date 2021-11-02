@@ -1,5 +1,5 @@
 <template>
-  <img :src="url" :alt="token.name" />
+  <img class="token-logo-coingecko" :src="url" :alt="token.name" />
 </template>
 
 <script>
