@@ -33,7 +33,7 @@ const getters = {
   chargeAmount: state => state.charge && state.charge.amount,
   externalIdentifier: state => state.charge && state.charge.externalIdentifier,
   payments: state => (state.checkout && state.checkout.payments) || [],
-  confirmedPayments: getters => getters.payments.filter(payment => payment.confirmed),
+  confirmedPayments: (_, getters) => getters.payments.filter(payment => payment.confirmed),
   paymentToken: (state, getters, _, rootGetters) => {
     let tokenUrl = state.checkout && state.checkout.token
     return tokenUrl && rootGetters['tokens/tokensByUrl'][tokenUrl]
@@ -41,15 +41,15 @@ const getters = {
   tokenPayments: (state, getters) => {
     let token = getters.paymentToken
     return (
-      (token &&
+      (token && getters.payments &&
         getters.payments.filter(payment => payment.currency.address == token.address)) ||
       []
     )
   },
   totalAmountPaid: (state, getters) =>
-    getters.payments.reduce((acc, payment) => acc + payment.amount, 0),
+    getters.payments ? getters.tokenPayments.reduce((acc, payment) => acc + payment.amount, 0) : 0,
   totalAmountConfirmed: getters =>
-    getters.confirmedPayments.reduce((acc, payment) => acc + payment.amount, 0),
+    getters.confirmedPayments ? getters.confirmedPayments.reduce((acc, payment) => acc + payment.amount, 0) : 0,
   hasPartialPayment: (state, getters) => {
     return getters.totalAmountPaid > 0 && getters.totalAmountPaid < state.checkout.amount
   },
@@ -58,12 +58,13 @@ const getters = {
       getters.totalAmountConfirmed > 0 && getters.totalAmountConfirmed < state.checkout.amount
     )
   },
-  isConfirmed: state => state.checkout && state.checkout.status === 'confirmed',
-  isExpired: state => state.checkout && state.checkout.status === 'expired',
-  isOpen: state => state.checkout && state.checkout.status === 'open',
-  isProcessing: state => state.checkout && state.checkout.status === 'paid',
+  isConfirmed: state => Boolean(state.checkout && state.checkout.status === 'confirmed'),
+  isExpired: state => Boolean(state.checkout && state.checkout.status === 'expired'),
+  isOpen: state => Boolean(state.checkout && state.checkout.status === 'open'),
+  isProcessing: state => Boolean(state.checkout && state.checkout.status === 'paid'),
+  isPaid: (_, getters) => Boolean(getters.tokenAmountDue) && getters.tokenAmountDue.lte(getters.totalAmountPaid),
   isFinalized: state =>
-    state.checkout && ['expired', 'confirmed'].includes(state.checkout.status),
+    Boolean(state.checkout) && ['expired', 'confirmed'].includes(state.checkout.status),
   tokenAmountDue: (state, getters) => {
     if (!state.checkout) return null
     if (!state.checkout.amount) return null
@@ -78,7 +79,9 @@ const getters = {
       (acc, payment) => acc.add(Decimal(payment.amount)),
       Decimal(0)
     )
-    return Decimal(state.checkout.amount).minus(received)
+
+    const dueAmount = Decimal(state.checkout.amount).minus(received)
+    return dueAmount.gte(0) ? dueAmount : Decimal(0)
   },
   acceptedTokens: (state, getters, rootState) => {
     let allTokens = rootState.tokens.tokens
