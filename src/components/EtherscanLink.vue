@@ -49,6 +49,8 @@ export default {
       if (this.token) {
         return 'token'
       }
+
+      return null
     },
     resourceIdentifier() {
       if (this.address) {
@@ -62,6 +64,8 @@ export default {
       if (this.token) {
         return this.token.address
       }
+
+      return null
     },
     resource() {
       if (this.address) {
@@ -75,6 +79,8 @@ export default {
       if (this.token) {
         return this.token.code
       }
+
+      return null
     },
   },
 }
