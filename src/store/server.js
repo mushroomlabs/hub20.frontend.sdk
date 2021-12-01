@@ -11,7 +11,7 @@ export const SERVER_SET_URL_SUCCESS = 'SERVER_SET_URL_SUCCESS'
 export const SERVER_SET_URL_FAILURE = 'SERVER_SET_URL_FAILURE'
 export const SERVER_CLEAR_URL = 'SERVER_CLEAR_URL'
 
-const VERSION = '^0.2'
+const COMPATIBLE_VERSIONS = '^0.2 || ^0.3'
 
 const initialState = () => ({
   rootUrl: null,
@@ -51,7 +51,7 @@ const actions = {
     return client
       .checkHub20Server(url)
       .then(version => {
-        if (semver.satisfies(`${version}`, VERSION)) {
+        if (semver.satisfies(`${version}`, COMPATIBLE_VERSIONS)) {
           client.setUrl(url)
           commit(SERVER_SET_URL_SUCCESS, {url, version})
         } else {
