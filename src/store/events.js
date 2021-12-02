@@ -11,6 +11,7 @@ export const EVENT_TYPES = {
   ETHEREUM_NODE_UNAVAILABLE: 'ethereum_node.unavailable',
   ETHEREUM_NODE_OK: 'ethereum_node.ok',
   RAIDEN_DEPOSIT_RECEIVED: 'raiden.deposit.received',
+  RAIDEN_DEPOSIT_CONFIRMED: 'raiden.deposit.confirmed',
   RAIDEN_ROUTE_EXPIRED: 'raiden.payment_route.expired'
 }
 

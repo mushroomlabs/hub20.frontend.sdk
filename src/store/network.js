@@ -41,6 +41,9 @@ const actions = {
   },
   refresh({dispatch}) {
     return dispatch('getStatus')
+  },
+  updateBlockchainHeight({commit}, blockNumber) {
+    return commit(NETWORK_SET_ETHEREUM_CURRENT_BLOCK, blockNumber)
   }
 }
 

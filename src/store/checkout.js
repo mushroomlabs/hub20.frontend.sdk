@@ -16,6 +16,7 @@ export const CHECKOUT_SET_PAYMENT_RECEIVED = 'CHECKOUT_SET_PAYMENT_RECEIVED'
 export const CHECKOUT_SET_PAYMENT_CONFIRMED = 'CHECKOUT_SET_PAYMENT_CONFIRMED'
 export const CHECKOUT_SET_EXPIRED = 'CHECKOUT_SET_EXPIRED'
 export const CHECKOUT_WEBSOCKET_OPEN = 'CHECKOUT_WEBSOCKET_OPEN'
+export const CHECKOUT_WEBSOCKET_CLOSE = 'CHECKOUT_WEBSOCKET_CLOSE'
 
 const initialState = () => ({
   merchantStore: null,
@@ -105,10 +106,17 @@ const mutations = {
 
     if (state.websocket) {
       state.websocket.close()
+      state.websocket = null
     }
   },
   [CHECKOUT_WEBSOCKET_OPEN](state, websocket) {
     state.websocket = websocket
+  },
+  [CHECKOUT_WEBSOCKET_CLOSE](state) {
+    if (state.websocket) {
+      state.websocket.close()
+      state.websocket = null
+    }
   },
 }
 
@@ -130,7 +138,12 @@ const actions = {
   },
   openWebsocket({commit, rootGetters}, checkoutId) {
     const url = rootGetters['server/checkoutEventWebsocketUrl'](checkoutId)
-    return commit(CHECKOUT_WEBSOCKET_OPEN, new WebSocket(url))
+    const ws = new WebSocket(url)
+    commit(CHECKOUT_WEBSOCKET_OPEN, ws)
+    return new Promise(resolve => resolve(ws))
+  },
+  closeWebsocket({commit}) {
+    commit(CHECKOUT_WEBSOCKET_CLOSE)
   },
   fetch({commit}, checkoutId) {
     return client.fetch(checkoutId).then(({data}) => commit(CHECKOUT_SET_DATA, data))
