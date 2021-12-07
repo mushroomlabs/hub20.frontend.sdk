@@ -23,6 +23,7 @@ const initialState = () => ({
   checkout: null,
   charge: null,
   websocket: null,
+  supportsWebsocket: true,
 })
 
 const getters = {
@@ -30,6 +31,7 @@ const getters = {
   isReady: (state, getters) => getters.isLoaded && Boolean(state.checkout),
   storeId: state => state.merchantStore && state.merchantStore.id,
   checkoutId: state => state.checkout && state.checkout.id,
+  hasActiveConnection: state => state.websocket && state.websocket.readyState === WebSocket.OPEN,
   chargeCurrencyCode: state => state.charge && state.charge.currencyCode,
   chargeAmount: state => state.charge && state.charge.amount,
   externalIdentifier: state => state.charge && state.charge.externalIdentifier,
