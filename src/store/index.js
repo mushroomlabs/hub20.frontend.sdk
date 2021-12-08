@@ -14,8 +14,9 @@ import stores from './stores'
 import tokenModule, * as tokens from './tokens'
 import users from './users'
 import web3 from './web3'
+import types from './types'
 
-export {events, tokens}
+export {events, tokens, types}
 
 
 export default {
@@ -24,6 +25,7 @@ export default {
   auth,
   checkout,
   coingecko,
+  events,
   funding,
   network,
   notifications,
@@ -33,7 +35,6 @@ export default {
   stores,
   users,
   web3,
-  events,
   EVENT_TYPES,
   tokens: tokenModule
 }

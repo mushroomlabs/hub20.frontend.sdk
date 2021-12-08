@@ -1,4 +1,4 @@
-import auth from '../api/auth'
+import api from '../api/auth'
 
 export const ACTIVATION_BEGIN = 'ACTIVATION_BEGIN'
 export const ACTIVATION_CLEAR = 'ACTIVATION_CLEAR'
@@ -9,33 +9,85 @@ export const REGISTRATION_CLEAR = 'REGISTRATION_CLEAR'
 export const REGISTRATION_FAILURE = 'REGISTRATION_FAILURE'
 export const REGISTRATION_SUCCESS = 'REGISTRATION_SUCCESS'
 
-export default {
-  namespaced: true,
-  state: {
-    activationCompleted: false,
-    activationError: false,
-    activationLoading: false,
-    registrationCompleted: false,
-    registrationError: false,
-    registrationLoading: false
-  },
-  actions: {
-    createAccount({commit}, {username, password1, password2, email}) {
+
+const initialState = () => ({
+  activationCompleted: false,
+  activationError: null,
+  activationLoading: false,
+  registrationCompleted: false,
+  registrationError: null,
+  registrationLoading: false
+})
+
+
+const getters = {
+  registrationErrorMessage: (_, getters) => getters.registrationErrors && getters.registrationErrors[0],
+  registrationErrorResponse: state => (state.registrationError && state.registrationError.response.data) || {},
+  registrationErrors: (_, getters) => getters.registrationErrorResponse.non_field_errors || [],
+  registrationFieldError: (_, getters) => (fieldName) => {
+    const errorList = getters.registrationErrorResponse[fieldName]
+    return errorList && errorList[0]
+  }
+}
+
+const mutations = {
+    [ACTIVATION_BEGIN](state) {
+      state.activationLoading = true
+    },
+    [ACTIVATION_CLEAR](state) {
+      state.activationCompleted = false
+      state.activationError = null
+      state.activationLoading = false
+    },
+    [ACTIVATION_FAILURE](state, error) {
+      state.activationError = error
+      state.activationLoading = false
+    },
+    [ACTIVATION_SUCCESS](state) {
+      state.activationCompleted = true
+      state.activationError = null
+      state.activationLoading = false
+    },
+    [REGISTRATION_BEGIN](state) {
+      state.registrationLoading = true
+      state.registrationError = null
+    },
+    [REGISTRATION_CLEAR](state) {
+      state.registrationCompleted = false
+      state.registrationError = null
+      state.registrationLoading = false
+    },
+    [REGISTRATION_FAILURE](state, error) {
+      state.registrationError = error
+      state.registrationLoading = false
+    },
+    [REGISTRATION_SUCCESS](state) {
+      state.registrationCompleted = true
+      state.registrationError = null
+      state.registrationLoading = false
+    }
+}
+
+const actions = {
+  createAccount({commit}, {username, password1, password2, email}) {
       commit(REGISTRATION_BEGIN)
-      return auth
+      return api
         .createAccount(username, password1, password2, email)
         .then(({data}) => {
           commit(REGISTRATION_SUCCESS)
-          return data.key
+          return new Promise(resolve => resolve(data.key))
         })
-        .catch(() => commit(REGISTRATION_FAILURE))
+        .catch((error) => {
+          commit(REGISTRATION_FAILURE, error)
+          throw error
+        })
     },
     activateAccount({commit}, {key}) {
       commit(ACTIVATION_BEGIN)
-      return auth
+      return api
         .verifyAccountEmail(key)
         .then(() => commit(ACTIVATION_SUCCESS))
-        .catch(() => commit(ACTIVATION_FAILURE))
+        .catch((error) => commit(ACTIVATION_FAILURE, error))
     },
     clearRegistrationStatus({commit}) {
       commit(REGISTRATION_CLEAR)
@@ -43,41 +95,12 @@ export default {
     clearActivationStatus({commit}) {
       commit(ACTIVATION_CLEAR)
     }
-  },
-  mutations: {
-    [ACTIVATION_BEGIN](state) {
-      state.activationLoading = true
-    },
-    [ACTIVATION_CLEAR](state) {
-      state.activationCompleted = false
-      state.activationError = false
-      state.activationLoading = false
-    },
-    [ACTIVATION_FAILURE](state) {
-      state.activationError = true
-      state.activationLoading = false
-    },
-    [ACTIVATION_SUCCESS](state) {
-      state.activationCompleted = true
-      state.activationError = false
-      state.activationLoading = false
-    },
-    [REGISTRATION_BEGIN](state) {
-      state.registrationLoading = true
-    },
-    [REGISTRATION_CLEAR](state) {
-      state.registrationCompleted = false
-      state.registrationError = false
-      state.registrationLoading = false
-    },
-    [REGISTRATION_FAILURE](state) {
-      state.registrationError = true
-      state.registrationLoading = false
-    },
-    [REGISTRATION_SUCCESS](state) {
-      state.registrationCompleted = true
-      state.registrationError = false
-      state.registrationLoading = false
-    }
-  }
+}
+
+export default {
+  namespaced: true,
+  state: initialState(),
+  actions,
+  getters,
+  mutations,
 }
