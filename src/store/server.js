@@ -22,7 +22,7 @@ const initialState = () => ({
 
 const getters = {
   isConnected: state => Boolean(state.rootUrl),
-  serverDomain: state => state.rootUrl && new URL(state.rootUrl).origin,
+  serverHostname: state => state.rootUrl && new URL(state.rootUrl).hostname,
   websocketRootUrl: state => {
     if (!state.rootUrl) {
       return null
