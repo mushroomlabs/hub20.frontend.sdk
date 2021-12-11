@@ -4,7 +4,7 @@ export const toWei = function (token, amount) {
 
 export const formattedAmount = function (amount, token, maxDigits) {
   if (amount == 0) {
-    return '0'
+    return `0 ${token.code}`
   }
 
   let maximumSignificantDigits = maxDigits || token.decimals
