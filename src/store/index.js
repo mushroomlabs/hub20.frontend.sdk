@@ -8,6 +8,7 @@ import funding from './funding'
 import network from './network'
 import notifications from './notifications'
 import password from './password'
+import raiden from './raiden'
 import server from './server'
 import signup from './signup'
 import stores from './stores'
@@ -30,6 +31,7 @@ export default {
   network,
   notifications,
   password,
+  raiden,
   server,
   signup,
   stores,
