@@ -15,9 +15,9 @@ export default {
     return this._client.get(`/balance/${address}`)
   },
   getAccountDetails() {
-    return this._client.get('/accounts/user')
+    return this._client.get('/my/profile')
   },
   updateAccountDetails(data) {
-    return this._client.patch('/accounts/user', data)
+    return this._client.patch('/my/profile', data)
   }
 }

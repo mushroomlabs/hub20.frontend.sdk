@@ -16,6 +16,7 @@ export const SET_BALANCES = 'SET_BALANCES'
 export const SET_CREDITS = 'SET_CREDITS'
 export const SET_DEBITS = 'SET_DEBITS'
 export const SET_PROFILE = 'SET_PROFILE'
+export const ACCOUNT_SET_INITIALIZED = 'ACCOUNT_SET_INITIALIZED'
 export const ACCOUNT_RESET_STATE = 'ACCOUNT_RESET_STATE'
 
 const initialState = () => ({
@@ -23,7 +24,8 @@ const initialState = () => ({
   credits: [],
   debits: [],
   profile: null,
-  error: null
+  error: null,
+  initialized: false
 })
 
 const getters = {
@@ -41,7 +43,8 @@ const getters = {
     ),
   transactions: state => utils.sortedByDate(state.credits.concat(state.debits)),
   tokenBalance: (state, getters) => tokenAddress =>
-    getters.balancesByTokenAddress[tokenAddress] || Decimal(0)
+    getters.balancesByTokenAddress[tokenAddress] || Decimal(0),
+  isLoaded: state => state.initialized
 }
 
 const actions = {
@@ -78,8 +81,10 @@ const actions = {
     dispatch('fetchDebits')
     dispatch('fetchProfileData')
   },
-  initialize({dispatch}) {
-    dispatch('fetchAll')
+  initialize({commit, dispatch, getters}) {
+    if (!getters.isLoaded) {
+      return dispatch('fetchAll').then(() => commit(ACCOUNT_SET_INITIALIZED))
+    }
   },
   refresh({dispatch}) {
     dispatch('fetchBalances')
@@ -136,6 +141,9 @@ const mutations = {
   [UPDATE_DEBITS_FAILURE](state, exc) {
     state.debits = []
     state.error = exc
+  },
+  [ACCOUNT_SET_INITIALIZED](state) {
+    state.initialized = true
   },
   [ACCOUNT_RESET_STATE](state) {
     Object.assign(state, initialState())
