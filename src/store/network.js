@@ -2,40 +2,66 @@ import Vue from 'vue'
 
 import client from '../api/network'
 
-export const NETWORK_LOAD_BLOCKCHAIN_STATUS_SUCCESS = 'NETWORK_LOAD_BLOCKCHAIN_STATUS_SUCCESS'
-export const NETWORK_SET_ETHEREUM_CURRENT_BLOCK = 'NETWORK_SET_ETHEREUM_CURRENT_BLOCK'
+export const NETWORK_SET_INITIALIZED = 'NETWORK_SET_INITIALIZED'
+export const NETWORK_LOAD_BLOCKCHAIN_LIST = 'NETWORK_LOAD_BLOCKCHAIN_LIST'
+export const NETWORK_LOAD_BLOCKCHAIN_DATA = 'NETWORK_LOAD_BLOCKCHAIN_DATA'
+export const NETWORK_SET_BLOCKCHAIN_HEIGHT = 'NETWORK_SET_BLOCKCHAIN_HEIGHT'
 
 const initialState = () => ({
-  blockchains: []
+  blockchains: [],
+  chainDataMap: {},
+  initialized: false
 })
 
 const getters = {
-  chainsById: state => state.blockchains.reduce((acc, chain) => Object.assign({[chain.blockchain.network]: chain}, acc), {}),
-  NodeOnline: (_, getters) => chainId => getters.chainsById[chainId].online,
-  NodeSynced: (_, getters) => chainId => getters.chainsById[chainId].synced,
-  currentBlock: (_, getters) => chainId => getters.chainsById[chainId].currentBlock,
+  activeChainIds: state => state.blockchains.map(chain => chain.id),
+  chainsById: state => state.blockchains.reduce((acc, chain) => Object.assign({[chain.id]: chain}, acc), {}),
+  chainData: (_, getters) => chainId => getters.chainsById[chainId],
+  chainState: state => chainId => state.chainDataMap[chainId],
+  IsNodeOnline: (_, getters) => chainId => getters.chainState(chainId) && getters.chainState(chainId).online,
+  IsNodeSynced: (_, getters) => chainId => getters.chainState(chainId) && getters.chainState(chainId).synced,
+  currentBlock: (_, getters) => chainId => getters.chainState(chainId) && getters.chainState(chainId).height,
+  isLoaded: state => state.initialized
 }
 
 const actions = {
-  getStatus({commit}) {
-    client.getBlockchainStatusList().then(({data}) => {
-      commit(NETWORK_LOAD_BLOCKCHAIN_STATUS_SUCCESS, data)
+  getBlockchains({commit}) {
+    return client.getBlockchainList().then(({data}) => {
+      commit(NETWORK_LOAD_BLOCKCHAIN_LIST, data)
     })
   },
-  initialize({dispatch}) {
-    return dispatch('getStatus')
+  getStatus({commit}, chainId) {
+    return client.getBlockchainStatus(chainId).then(({data}) => {
+      commit(NETWORK_LOAD_BLOCKCHAIN_DATA, {chainId, data})
+    })
   },
-  refresh({dispatch}) {
-    return dispatch('getStatus')
+  initialize({commit, dispatch, getters}) {
+    if (!getters.isLoaded) {
+      return dispatch('getBlockchains').then(() => {
+        getters.activeChainIds.forEach(chainId => dispatch('getStatus', chainId))
+        commit(NETWORK_SET_INITIALIZED)
+      })
+    }
   }
 }
 
 const mutations = {
-  [NETWORK_LOAD_BLOCKCHAIN_STATUS_SUCCESS](state, data) {
+  [NETWORK_SET_INITIALIZED](state) {
+    state.initialized = true
+  },
+  [NETWORK_LOAD_BLOCKCHAIN_LIST](state, data) {
     state.blockchains = data
   },
-  [NETWORK_SET_ETHEREUM_CURRENT_BLOCK](state, blockNumber) {
-    Vue.set(state.ethereum, 'currentBlock', blockNumber)
+  [NETWORK_LOAD_BLOCKCHAIN_DATA](state, {chainId, data}) {
+    Vue.set(state.chainDataMap, chainId, data)
+  },
+  [NETWORK_SET_BLOCKCHAIN_HEIGHT](state, {chainId, blockNumber}) {
+    const chainData = state.chainDataMap[chainId]
+
+    if (chainData) {
+      chainData.height = blockNumber
+      Vue.set(state.chainDataMap, chainId, chainData)
+    }
   }
 }
 

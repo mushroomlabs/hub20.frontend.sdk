@@ -35,9 +35,9 @@ const filterByToken = (tokenList, token) =>
   tokenList && tokenList.filter(tokenBalance => isSameToken(tokenBalance, token))
 
 
-const filterByChain = (tokenList, chainId) =>
-  tokenList && tokenList.filter(tokenBalance => tokenBalance.network_id == chainId)
-
+/* const filterByChain = (tokenList, chainId) =>
+ *   tokenList && tokenList.filter(tokenBalance => tokenBalance.network_id == chainId)
+ *  */
 
 const getTokenBalance = (tokenList, token) => tokenList && filterByToken(tokenList, token).shift()
 
@@ -70,12 +70,12 @@ const getters = {
     )
     return sumBalances(storedAssets, getters.treasuryTokenBalance(token))
   },
-  tokensByChain: (_, getters) => chainId => {
-    let treasuryTokens = filterByChain(getters.treasuryBalances)
-    let userTokens = filterByChain(getters.userBalances)
-    let walletTokens = filterByChain(getters.walletBalances)
-    let raidenTokens = filterByChain(getters.raidenBalances)
-  },
+  /* tokensByChain: (_, getters) => chainId => {
+   *   let treasuryTokens = filterByChain(getters.treasuryBalances, chainId)
+   *   let userTokens = filterByChain(getters.userBalances, chainId)
+   *   let walletTokens = filterByChain(getters.walletBalances, chainId)
+   *   let raidenTokens = filterByChain(getters.raidenBalances, chainId)
+   * }, */
   walletAddresses: state => state.wallets && Object.keys(state.wallets),
   walletBalance: state => (address, token) => {
     let walletBalances = state.wallets && state.wallets[address]
