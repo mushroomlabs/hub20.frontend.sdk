@@ -2,10 +2,10 @@ import client from './client'
 
 export default {
   _client: client,
-  getList() {
-    return this._client.get('/tokens/')
+  getList(params) {
+    return this._client.get('/tokens/', {params})
   },
-  get(address) {
-    return this._client.get(`/tokens/token/${address}`)
+  getTokenData(address, chainId) {
+    return this._client.get(`/tokens/${chainId}-${address}`)
   }
 }

@@ -4,13 +4,13 @@ export const toWei = function (token, amount) {
 
 export const formattedAmount = function (amount, token, maxDigits) {
   if (amount == 0) {
-    return `0 ${token.code}`
+    return `0 ${token.symbol}`
   }
 
   let maximumSignificantDigits = maxDigits || token.decimals
   let formatter = new Intl.NumberFormat([], {maximumSignificantDigits})
   let formattedAmount = formatter.format(amount)
-  return `${formattedAmount} ${token.code}`
+  return `${formattedAmount} ${token.symbol}`
 }
 
 export const formattedCurrency = function (amount, currencyCode) {

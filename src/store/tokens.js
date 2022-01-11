@@ -1,9 +1,10 @@
+import Vue from 'vue'
+
 import client from '../api/tokens'
 
-export const TOKEN_COLLECTION_SET = 'TOKEN_COLLECTION_SET'
-export const TOKEN_SETUP_BEGIN = 'TOKEN_SETUP_BEGIN'
-export const TOKEN_SETUP_SUCCESS = 'TOKEN_SETUP_SUCCESS'
-export const TOKEN_SETUP_FAILURE = 'TOKEN_SETUP_FAILURE'
+export const TOKEN_FETCH_COLLECTION = 'TOKEN_FETCH_COLLECTION'
+export const TOKEN_FETCH_SINGLE = 'TOKEN_FETCH_SINGLE'
+export const TOKEN_FETCH_FAILURE = 'TOKEN_FETCH_FAILURE'
 
 export const TOKEN_NULL_ADDRESS = '0x0000000000000000000000000000000000000000'
 
@@ -38,7 +39,6 @@ export const BASE_TOKEN_LIST = {
   CNN: '0x8713d26637CF49e1b6B4a7Ce57106AaBc9325343',
   COFI: '0x3136ef851592acf49ca4c825131e364170fa32b3',
   CVC: '0x41e5560054824ea6b0732e656e3ad64e20e94e45',
-  SAI: '0x89d24a6b4ccb1b6faa2625fe562bdd9a23260359',
   DAI: '0x89d24a6b4ccb1b6faa2625fe562bdd9a23260359',
   DCC: '0xFFa93Aacf49297D51E211817452839052FDFB961',
   DTH: '0x5adc961D6AC3f7062D2eA45FEFB8D8167d44b190',
@@ -112,46 +112,44 @@ export const BASE_TOKEN_LIST = {
 
 const initialState = () => ({
   tokens: [],
-  error: null
+  errors: [],
+  initialized: false
 })
 
 const getters = {
-  listedTokens: state => state.tokens,
   tokensByAddress: state =>
     state.tokens.reduce((acc, token) => Object.assign({[token.address]: token}, acc), {}),
-  tokensByCode: state =>
-    state.tokens.reduce((acc, token) => Object.assign({[token.code]: token}, acc), {}),
   tokensByUrl: state =>
     state.tokens.reduce((acc, token) => Object.assign({[token.url]: token}, acc), {})
 }
 
 const actions = {
-  fetchTokens({commit}) {
-    commit(TOKEN_SETUP_BEGIN)
+  fetchTokens({commit}, filterOptions) {
     return client
-      .getList()
-      .then(({data}) => commit(TOKEN_COLLECTION_SET, data))
-      .then(() => commit(TOKEN_SETUP_SUCCESS))
-      .catch(error => commit(TOKEN_SETUP_FAILURE, error))
+      .getList(filterOptions)
+      .then(({data}) => commit(TOKEN_FETCH_COLLECTION, data))
+      .catch(error => commit(TOKEN_FETCH_FAILURE, error))
   },
-  initialize({dispatch}) {
-    return dispatch('fetchTokens')
+  fetchToken({commit, getters}, {tokenAddress, chainId}) {
+    if (!getters.tokensByAddress[tokenAddress]) {
+      return client.getTokenData(tokenAddress, chainId).then(({data}) =>
+        commit(TOKEN_FETCH_SINGLE, data)
+      )
+    }
   }
 }
 
 const mutations = {
-  [TOKEN_SETUP_BEGIN](state) {
-    state.tokens = []
-    state.error = null
+  [TOKEN_FETCH_FAILURE](state, error) {
+    state.errors.push(error)
   },
-  [TOKEN_SETUP_FAILURE](state, error) {
-    state.error = error
+  [TOKEN_FETCH_COLLECTION](state, data) {
+    state.tokens.concat(data)
+    Vue.set(state, 'tokens', state.tokens)
   },
-  [TOKEN_SETUP_SUCCESS](state) {
-    state.error = null
-  },
-  [TOKEN_COLLECTION_SET](state, data) {
-    state.tokens = data
+  [TOKEN_FETCH_SINGLE](state, data) {
+    state.tokens.push(data)
+    Vue.set(state, 'tokens', state.tokens)
   }
 }
 
