@@ -5,7 +5,10 @@ export default {
   getAccountingReport() {
     return this._client.get('/accounting/reporting')
   },
-  getWalletBalances(chainId) {
-    return this._client.get(`/accounting/wallets`)
+  getWalletBalances() {
+    return this._client.get('/accounting/wallets')
+  },
+  getWalletBalance(walletAddress) {
+    return this._client.get(`/accounting/wallets/${walletAddress}`)
   }
 }
