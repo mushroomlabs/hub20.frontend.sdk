@@ -7,10 +7,12 @@ export const STORE_COLLECTION_SETUP_FAILURE = 'STORE_COLLECTION_SETUP_FAILURE'
 export const STORE_EDIT_BEGIN = 'STORE_EDIT_BEGIN'
 export const STORE_EDIT_SET_NAME = 'STORE_EDIT_SET_NAME'
 export const STORE_EDIT_SET_URL = 'STORE_EDIT_SET_URL'
+export const STORE_EDIT_SET_WEBHOOK_URL = 'STORE_EDIT_SET_WEBHOOK_URL'
 export const STORE_EDIT_SET_ACCEPTED_TOKENS = 'STORE_EDIT_SET_ACCEPTED_TOKENS'
 export const STORE_EDIT_SUCCESS = 'STORE_EDIT_SUCCESS'
 export const STORE_EDIT_FAILURE = 'STORE_EDIT_FAILURE'
 export const STORE_RESET_STATE = 'STORE_RESET_STATE'
+
 
 const initialStoreData = {
   name: '',
@@ -22,18 +24,21 @@ const initialState = () => ({
   userStores: [],
   editingData: null,
   submissionErrors: null,
-  fetchError: null
+  fetchError: null,
+  initialized: false
 })
 
 const getters = {
   stores: state => state.userStores,
   storesById: state =>
     state.userStores.reduce((acc, store) => Object.assign({[store.id]: store}, acc), {}),
+  storeData: (_, getters) => storeId => getters.storesById[storeId],
   submissionErrorMessages: state => ({
     name: state && state.submissionErrors && state.submissionErrors.name && state.submissionErrors.name[0],
     siteUrl: state && state.submissionErrors && state.submissionErrors.site_url && state.submissionErrors.site_url[0],
     acceptedTokens: state && state.submissionErrors && state.submissionErrors.accepted_currencies && state.submissionErrors.accepted_currencies[0],
   }),
+  isLoaded: state => state.initialized
 }
 
 const actions = {
@@ -69,21 +74,19 @@ const actions = {
   removeStore({dispatch}, storeData) {
     return stores.remove(storeData.id).then(() => dispatch('fetchStores'))
   },
-  initialize({commit, dispatch}) {
-    commit(STORE_INITIALIZE)
-    dispatch('fetchStores')
-  },
-  refresh({dispatch}) {
-    dispatch('fetchStores')
+  initialize({commit, dispatch, getters}) {
+    if (!getters.isLoaded) {
+      return dispatch('fetchStores').then(() => commit(STORE_INITIALIZE))
+    }
   },
   tearDown({commit}) {
-    commit(STORE_RESET_STATE)
+    return commit(STORE_RESET_STATE)
   }
 }
 
 const mutations = {
   [STORE_INITIALIZE](state) {
-    Object.assign(state, initialState())
+    state.initialized = true
   },
   [STORE_COLLECTION_SETUP_FAILURE](state, error) {
     state.fetchError = error
@@ -108,6 +111,11 @@ const mutations = {
   [STORE_EDIT_SET_URL](state, siteUrl) {
     if (state.editingData) {
       state.editingData.site_url = siteUrl
+    }
+  },
+  [STORE_EDIT_SET_WEBHOOK_URL](state, webhookUrl) {
+    if (state.editingData) {
+      state.editingData.checkout_webhook_url = webhookUrl
     }
   },
   [STORE_EDIT_SET_ACCEPTED_TOKENS](state, acceptedTokens) {

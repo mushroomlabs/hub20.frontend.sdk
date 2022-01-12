@@ -48,6 +48,12 @@ const actions = {
       .then(({data}) => commit(FUNDING_DEPOSIT_LIST_LOADED, data))
       .catch(error => commit(FUNDING_DEPOSIT_FAILURE, error.response))
   },
+  fetchOpenDeposits({commit}) {
+    return client
+      .getDeposits({open: true})
+      .then(({data}) => commit(FUNDING_DEPOSIT_LIST_LOADED, data))
+      .catch(error => commit(FUNDING_DEPOSIT_FAILURE, error.response))
+  },
   createTransfer({commit}, payload) {
     const {token, amount, ...params} = payload
     return client
@@ -65,10 +71,6 @@ const actions = {
     dispatch('fetchDeposits')
     dispatch('fetchTransfers')
   },
-  refresh({dispatch}) {
-    dispatch('fetchDeposits')
-    dispatch('fetchTransfers')
-  },
   tearDown({commit}) {
     commit(FUNDING_RESET_STATE)
   }
@@ -79,13 +81,18 @@ const mutations = {
     state.deposits.push(depositData)
   },
   [FUNDING_DEPOSIT_LOADED](state, depositData) {
-    Vue.set(state.depositsById, depositData.id, depositData)
+    state.deposits.push(depositData)
   },
   [FUNDING_DEPOSIT_FAILURE](state, error) {
     state.error = error.data
   },
   [FUNDING_DEPOSIT_LIST_LOADED](state, depositList) {
-    state.deposits = depositList
+    // Array.concat is not reactive, so we make a new one to replace
+    const fullList = new Array()
+    fullList.concat(state.deposits)
+    fullList.concat(depositList)
+
+    Vue.set(state, 'deposits', fullList)
   },
   [FUNDING_TRANSFER_CREATED](state, transferData) {
     state.transfers.push(transferData)

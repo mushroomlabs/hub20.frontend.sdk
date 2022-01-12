@@ -7,8 +7,8 @@ export default {
       token: token.url,
     })
   },
-  getDeposits() {
-    return this._client.get('/deposits')
+  getDeposits(params) {
+    return this._client.get('/deposits', {params})
   },
   getDeposit(depositId) {
     return this._client.get(`/deposit/${depositId}`)
