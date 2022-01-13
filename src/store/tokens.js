@@ -130,9 +130,9 @@ const actions = {
       .then(({data}) => commit(TOKEN_FETCH_COLLECTION, data))
       .catch(error => commit(TOKEN_FETCH_FAILURE, error))
   },
-  fetchToken({commit, getters}, {tokenAddress, chainId}) {
-    if (!getters.tokensByAddress[tokenAddress]) {
-      return client.getTokenData(tokenAddress, chainId).then(({data}) =>
+  fetchToken({commit, getters}, tokenUrl) {
+    if (!getters.tokensByUrl[tokenUrl]) {
+      return client.getToken(tokenUrl).then(({data}) =>
         commit(TOKEN_FETCH_SINGLE, data)
       )
     }

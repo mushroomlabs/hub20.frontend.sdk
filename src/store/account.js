@@ -31,19 +31,18 @@ const initialState = () => ({
 const getters = {
   hasAdminAccess: state => state.profile && state.profile.has_admin_access,
   openBalances: state =>
-    state.balances.filter(token =>
-      Decimal(token.balance)
+    state.balances.filter(balance =>
+      Decimal(balance.amount)
         .abs()
         .gt(0)
     ),
-  balancesByTokenAddress: state =>
-    state.balances.reduce(
-      (acc, token) => Object.assign({[token.address]: Decimal(token.balance)}, acc),
-      {}
-    ),
+  balancesByTokenUrl: state =>
+    state.balances.reduce((acc, balance) => Object.assign({[balance.token]: balance}, acc), {}),
   transactions: state => utils.sortedByDate(state.credits.concat(state.debits)),
-  tokenBalance: (state, getters) => tokenAddress =>
-    getters.balancesByTokenAddress[tokenAddress] || Decimal(0),
+  tokenBalance: (_, getters) => token => {
+    let balance = getters.balancesByTokenUrl[token.url]
+    return balance ? Decimal(balance.amount) : Decimal(0)
+  },
   isLoaded: state => state.initialized
 }
 

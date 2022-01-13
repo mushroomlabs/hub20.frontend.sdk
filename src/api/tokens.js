@@ -5,6 +5,9 @@ export default {
   getList(params) {
     return this._client.get('/tokens/', {params})
   },
+  getToken(tokenUrl) {
+    return this._client.get(tokenUrl)
+  },
   getTokenData(address, chainId) {
     return this._client.get(`/tokens/${chainId}-${address}`)
   }
