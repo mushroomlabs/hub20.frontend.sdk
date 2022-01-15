@@ -4,7 +4,7 @@
       <dt v-if="amount">Amount</dt>
       <dd v-if="amount">
         <ClipboardCopier :value="amount.toFixed()">
-          {{ amount }} {{ token.code }}
+          {{ amount }} {{ token.symbol }}
         </ClipboardCopier>
       </dd>
       <dt>Address</dt>
@@ -20,7 +20,7 @@
       <QrCode :message="QrCodeMessage" />
     </div>
 
-    <BlockchainPaymentRouteCountdown :route="route"/>
+    <BlockchainPaymentRouteCountdown :route="route" :chain="chain" />
 
     <button class="payment-route-display-toggle text" @click="toggleDisplay" v-if="showQrCode">
       Show Payment data as text
@@ -44,7 +44,7 @@
 
 <script>
 import Decimal from 'decimal.js-light'
-import {mapGetters} from 'vuex'
+import {mapGetters, mapState} from 'vuex'
 
 import {toWei} from '../../../filters'
 import QrCode from '../../QrCode'
@@ -67,6 +67,7 @@ export default {
       required: false,
     },
     token: Object,
+    chain: Object
   },
   data() {
     return {
@@ -75,6 +76,7 @@ export default {
   },
   computed: {
     ...mapGetters('web3', ['hasWeb3']),
+    ...mapState('network', ['blockchains']),
     QrCodeMessage() {
       let text = `ethereum:${this.route.address}`
 

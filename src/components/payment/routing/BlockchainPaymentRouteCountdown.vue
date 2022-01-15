@@ -1,6 +1,6 @@
 <template>
   <div class="blockchain-route-countdown" :class="{synced, online, expired}">
-    <BlockchainPaymentRouteCountdownCircle :route="route" />
+    <BlockchainPaymentRouteCountdownCircle :route="route" :chain="chain" />
     <span class="status-message">
       {{ message }}
     </span>
@@ -8,28 +8,24 @@
 </template>
 
 <script>
-import {mapGetters} from 'vuex'
+import BlockchainMixin from '../../../mixins/network'
 
 import BlockchainPaymentRouteCountdownCircle from './BlockchainPaymentRouteCountdownCircle'
 
 export default {
   name: 'blockchain-payment-route-countdown',
+  mixins: [BlockchainMixin],
   components: {
     BlockchainPaymentRouteCountdownCircle,
   },
   props: {
     route: {
       type: Object,
-    },
+    }
   },
   computed: {
-    ...mapGetters('network', {
-      synced: 'ethereumSynced',
-      online: 'ethereumOnline',
-      currentBlock: 'currentBlock',
-    }),
     expired() {
-      return this.currentBlock > this.expires_on
+      return this.currentBlock && this.currentBlock > this.route.expiration_block
     },
     blocksRemaining() {
       return this.currentBlock ? this.route.expiration_block - this.currentBlock : null
@@ -40,11 +36,11 @@ export default {
       }
 
       if (!this.online) {
-        return `Server lost connection with ethereum network. Please wait until it is restored`
+        return `Server lost connection with ${this.chain.name}. Please wait until it is restored`
       }
 
       if (!this.synced) {
-        return `Server is out of sync with ethererum network. Payments might not be displayed here.`
+        return `Server is out of sync with ${this.chain.name}. Payments might not be displayed here.`
       }
 
       return `Please complete your payment in the next ${this.blocksRemaining} blocks...`

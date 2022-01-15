@@ -38,6 +38,7 @@ export default {
       required: false,
     },
     token: Object,
+    chain: Object
   },
 }
 </script>

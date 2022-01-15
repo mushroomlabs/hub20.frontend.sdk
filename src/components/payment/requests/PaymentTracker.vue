@@ -29,7 +29,7 @@ export default {
       return Boolean(this.pendingAmountDue) && this.pendingAmountDue > 0;
     },
     token() {
-      return this.getTokenByUrl(this.paymentRequest.token)
+      return this.tokensByUrl[this.paymentRequest.token]
     },
   },
 }

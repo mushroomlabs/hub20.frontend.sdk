@@ -56,11 +56,11 @@ const mutations = {
     Vue.set(state.chainDataMap, chainId, data)
   },
   [NETWORK_SET_BLOCKCHAIN_HEIGHT](state, {chainId, blockNumber}) {
-    const chainData = state.chainDataMap[chainId]
+    const chainDataMap = {...state.chainDataMap}
 
-    if (chainData) {
-      chainData.height = blockNumber
-      Vue.set(state.chainDataMap, chainId, chainData)
+    if (chainDataMap[chainId]) {
+      chainDataMap[chainId].height = blockNumber
+      Vue.set(state, 'chainDataMap', chainDataMap)
     }
   }
 }

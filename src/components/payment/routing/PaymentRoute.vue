@@ -1,21 +1,24 @@
 <template>
 <div class="payment-route" :class="{selected, expired}">
   <div class="payment-route-details">
-    <BlockchainPaymentRouteDetail v-if="isBlockchainRoute" :route="route" :amount="amount" :token="token"/>
-    <RaidenPaymentRouteDetail v-if="isRaidenRoute" :route="route" :amount="amount" :token="token" />
+    <BlockchainPaymentRouteDetail v-if="isBlockchainRoute" :route="route" :amount="amount" :token="token" :chain="chain" />
+    <RaidenPaymentRouteDetail v-if="isRaidenRoute" :route="route" :amount="amount" :token="token" :chain="chain" />
   </div>
 </div>
 </template>
 
 <script>
 import Decimal from 'decimal.js-light'
-import {mapGetters} from 'vuex'
+
+import BlockchainMixin from '../../../mixins/network'
 
 import BlockchainPaymentRouteDetail from './BlockchainPaymentRouteDetail'
 import RaidenPaymentRouteDetail from './RaidenPaymentRouteDetail'
 
 
 export default {
+  name: 'payment-route',
+  mixins: [BlockchainMixin],
   components: {
     BlockchainPaymentRouteDetail,
     RaidenPaymentRouteDetail,
@@ -45,8 +48,6 @@ export default {
     }
   },
   computed: {
-    ...mapGetters('network', ['currentBlock']),
-
     expired() {
       if (this.isBlockchainRoute) {
         return this.currentBlock > this.route.expiration_block

@@ -117,10 +117,9 @@ const initialState = () => ({
 })
 
 const getters = {
-  tokensByAddress: state =>
-    state.tokens.reduce((acc, token) => Object.assign({[token.address]: token}, acc), {}),
   tokensByUrl: state =>
-    state.tokens.reduce((acc, token) => Object.assign({[token.url]: token}, acc), {})
+    state.tokens.reduce((acc, token) => Object.assign({[token.url]: token}, acc), {}),
+  nativeToken: state => chainId => state.tokens.filter(token => (token.address == TOKEN_NULL_ADDRESS) && token.network_id == chainId).shift(),
 }
 
 const actions = {

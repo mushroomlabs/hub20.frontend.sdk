@@ -1,3 +1,4 @@
 import TokenMixin from './tokens'
+import BlockchainMixin from './network'
 
-export default {TokenMixin}
+export default {BlockchainMixin, TokenMixin}

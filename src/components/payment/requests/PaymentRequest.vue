@@ -17,6 +17,7 @@
 
     <PaymentRoute
       v-for="route in openRoutes"
+      :chain="chain"
       :route="route"
       :token="token"
       :amount="pendingAmountDue"
@@ -49,13 +50,20 @@ export default {
     }
   },
   computed: {
-    ...mapGetters('network', ['currentBlock']),
+    ...mapGetters('network', {getCurrentBlock: 'currentBlock'}),
+    ...mapGetters('network', ['chainData']),
     ...mapGetters('checkout', ['pendingAmountDue']),
     hasMultipleRoutes() {
       return this.openRoutes.length > 1
     },
     token() {
-      return this.getTokenByUrl(this.paymentRequest.token)
+      return this.tokensByUrl[this.paymentRequest.token]
+    },
+    chain() {
+      return this.chainData(this.chainId)
+    },
+    chainId() {
+      return this.token.network_id
     },
     openRoutes() {
       return this.paymentRequest
@@ -82,7 +90,7 @@ export default {
     },
     isOpenRoute(route) {
       if (route.type == 'blockchain') {
-        return this.currentBlock <= route.expiration_block
+        return this.getCurrentBlock(this.chainId) <= route.expiration_block
       }
       return true
     },

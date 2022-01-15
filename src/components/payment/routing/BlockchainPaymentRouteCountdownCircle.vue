@@ -17,7 +17,7 @@
 </template>
 
 <script>
-import {mapGetters} from 'vuex'
+import BlockchainMixin from '../../../mixins/network'
 
 const CIRCLE_RADIUS = 35
 const WARNING_THRESHOLD = 30
@@ -25,10 +25,11 @@ const CRITICAL_THRESHOLD = 15
 
 export default {
   name: 'blockchain-payment-route-countdown-circle',
+  mixins: [BlockchainMixin],
   props: {
     route: {
       type: Object,
-    },
+    }
   },
   data() {
     return {
@@ -36,13 +37,8 @@ export default {
     }
   },
   computed: {
-    ...mapGetters('network', {
-      synced: 'ethereumSynced',
-      online: 'ethereumOnline',
-      currentBlock: 'currentBlock',
-    }),
     expired() {
-      return this.currentBlock >= this.route.expiration_block
+      return this.currentBlock && this.currentBlock >= this.route.expiration_block
     },
     blockInterval() {
       return this.route.expiration_block - this.route.start_block

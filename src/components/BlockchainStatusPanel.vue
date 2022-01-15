@@ -10,8 +10,8 @@ import {mapGetters} from 'vuex'
 export default {
   computed: {
     ...mapGetters('network', {
-      synced: 'ethereumSynced',
-      online: 'ethereumOnline',
+      synced: 'IsNodeSynced',
+      online: 'isNodeOnline',
       currentBlock: 'currentBlock',
     }),
   },
