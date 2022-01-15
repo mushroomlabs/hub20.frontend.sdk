@@ -1,5 +1,3 @@
-import Decimal from 'decimal.js-light'
-
 import client from '../api/audit'
 
 export const AUDIT_FETCH_ACCOUNTING_REPORT_BEGIN = 'AUDIT_FETCH_ACCOUNTING_REPORT_BEGIN'
@@ -10,74 +8,26 @@ export const AUDIT_FETCH_WALLET_BALANCES_FAILURE = 'AUDIT_FETCH_WALLET_BALANCES_
 export const AUDIT_FETCH_WALLET_BALANCES_SUCCESS = 'AUDIT_FETCH_WALLET_BALANCES_SUCCESS'
 export const AUDIT_RESET_STATE = 'AUDIT_RESET_STATE'
 
-const isSameToken = (one, another) =>
-  one.address == another.address && one.network_id == another.network_id
 
-const sumBalances = (one, another) => {
-  if (!one) {
-    return another
-  }
-
-  if (!another) {
-    return one
-  }
-
-  if (!isSameToken(one, another)) {
-    throw `Can not sum ${one.code} (${one.address}) with ${another.code} (${another.address})`
-  }
-
-  let sum = new Decimal(one.balance || 0).add(new Decimal(another.balance || 0))
-
-  return {...one, balance: sum.toString()}
-}
-
-const filterByToken = (tokenList, token) =>
-  tokenList && tokenList.filter(tokenBalance => isSameToken(tokenBalance, token))
-
-
-/* const filterByChain = (tokenList, chainId) =>
- *   tokenList && tokenList.filter(tokenBalance => tokenBalance.network_id == chainId)
- *  */
-
-const getTokenBalance = (tokenList, token) => tokenList && filterByToken(tokenList, token).shift()
+const getTokenBalance = (balanceList, token) => balanceList.filter(balance => balance.token == token.url).shift()
 
 const initialState = () => ({
   loadingBooks: false,
   loadingWallets: false,
-  accountingBooks: null,
-  wallets: null,
+  accountingBooks: {},
+  wallets: [],
   error: null
 })
 
 const getters = {
-  treasuryBalances: state => state.accountingBooks && state.accountingBooks.treasury,
-  userBalances: state => state.accountingBooks && state.accountingBooks.user_accounts,
-  walletBalances: state => state.accountingBooks && state.accountingBooks.wallets,
-  raidenBalances: state => state.accountingBooks && state.accountingBooks.raiden,
-  externalAccountBalances: state =>
+  treasuryBook: state => state.accountingBooks && state.accountingBooks.treasury,
+  userBook: state => state.accountingBooks && state.accountingBooks.user_accounts,
+  walletBook: state => state.accountingBooks && state.accountingBooks.wallets,
+  raidenBook: state => state.accountingBooks && state.accountingBooks.raiden,
+  externalAccountBook: state =>
     state.accountingBooks && state.accountingBooks.external_addresses,
-  treasuryTokenBalance: (state, getters) => token =>
-    getTokenBalance(getters.treasuryBalances, token),
-  userTokenBalance: (state, getters) => token => getTokenBalance(getters.userBalances, token),
-  walletTokenBalance: (state, getters) => token => getTokenBalance(getters.walletBalances, token),
-  raidenTokenBalance: (state, getters) => token => getTokenBalance(getters.raidenBalances, token),
-  externalTokenBalance: (state, getters) => token =>
-    getTokenBalance(getters.externalAccountBalances, token),
-  totalTokenAssets: (state, getters) => token => {
-    let storedAssets = sumBalances(
-      getters.walletTokenBalance(token),
-      getters.raidenTokenBalance(token)
-    )
-    return sumBalances(storedAssets, getters.treasuryTokenBalance(token))
-  },
-  /* tokensByChain: (_, getters) => chainId => {
-   *   let treasuryTokens = filterByChain(getters.treasuryBalances, chainId)
-   *   let userTokens = filterByChain(getters.userBalances, chainId)
-   *   let walletTokens = filterByChain(getters.walletBalances, chainId)
-   *   let raidenTokens = filterByChain(getters.raidenBalances, chainId)
-   * }, */
   walletAddresses: state => state.wallets && Object.keys(state.wallets),
-  walletBalance: state => (address, token) => {
+  walletBalances: state => (address, token) => {
     let walletBalances = state.wallets && state.wallets[address]
     return walletBalances && getTokenBalance(walletBalances, token)
   }
@@ -97,14 +47,6 @@ const actions = {
       .getWalletBalances()
       .then(({data}) => commit(AUDIT_FETCH_WALLET_BALANCES_SUCCESS, data))
       .catch(exc => commit(AUDIT_FETCH_WALLET_BALANCES_FAILURE, exc))
-  },
-  initialize({dispatch}) {
-    dispatch('fetchAccountingReport')
-    dispatch('fetchWalletBalances')
-  },
-  refresh({dispatch}) {
-    dispatch('fetchAccountingReport')
-    dispatch('fetchWalletBalances')
   },
   tearDown({commit}) {
     commit(AUDIT_RESET_STATE)
