@@ -5,6 +5,7 @@ import client from '../api/tokens'
 export const TOKEN_FETCH_COLLECTION = 'TOKEN_FETCH_COLLECTION'
 export const TOKEN_FETCH_SINGLE = 'TOKEN_FETCH_SINGLE'
 export const TOKEN_FETCH_FAILURE = 'TOKEN_FETCH_FAILURE'
+export const TOKEN_UPDATE_TRANSFER_COST = 'TOKEN_UPDATE_TRANSFER_COST'
 
 export const TOKEN_NULL_ADDRESS = '0x0000000000000000000000000000000000000000'
 
@@ -13,7 +14,7 @@ export const ETHEREUM_NETWORKS = {
   ropsten: 3,
   rinkeby: 4,
   goerli: 5,
-  kovan: 42
+  kovan: 42,
 }
 
 // This token list is used mostly for testing purposes. We need a set
@@ -107,19 +108,26 @@ export const BASE_TOKEN_LIST = {
   WBTC: '0x2260fac5e5542a773aa44fbcfedf7c193bc2c599',
   WETH: '0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2',
   WINGS: '0x667088b212ce3d06a1b553a7221E1fD19000d9aF',
-  ZRX: '0xE41d2489571d322189246DaFA5ebDe1F4699F498'
+  ZRX: '0xE41d2489571d322189246DaFA5ebDe1F4699F498',
 }
 
 const initialState = () => ({
   tokens: [],
+  transferCosts: {},
   errors: [],
-  initialized: false
+  initialized: false,
 })
 
 const getters = {
   tokensByUrl: state =>
     state.tokens.reduce((acc, token) => Object.assign({[token.url]: token}, acc), {}),
-  nativeToken: state => chainId => state.tokens.filter(token => (token.address == TOKEN_NULL_ADDRESS) && token.network_id == chainId).shift(),
+  nativeTokens: state => state.tokens.filter(token => token.address == TOKEN_NULL_ADDRESS),
+  nativeTokensByChain: (_, getters) =>
+    getters.nativeTokens.reduce(
+      (acc, token) => Object.assign({[token.network_id]: token}, acc),
+      {}
+    ),
+  nativeToken: (_, getters) => chainId => getters.nativeTokensByChain[chainId],
 }
 
 const actions = {
@@ -131,11 +139,14 @@ const actions = {
   },
   fetchToken({commit, getters}, tokenUrl) {
     if (!getters.tokensByUrl[tokenUrl]) {
-      return client.getToken(tokenUrl).then(({data}) =>
-        commit(TOKEN_FETCH_SINGLE, data)
-      )
+      return client.getToken(tokenUrl).then(({data}) => commit(TOKEN_FETCH_SINGLE, data))
     }
-  }
+  },
+  fetchTransferCostEstimate({commit}, token) {
+    return client
+      .getTransferCostEstimate(token)
+      .then(({data}) => commit(TOKEN_UPDATE_TRANSFER_COST, {token, weiAmount: data}))
+  },
 }
 
 const mutations = {
@@ -144,12 +155,14 @@ const mutations = {
   },
   [TOKEN_FETCH_COLLECTION](state, data) {
     state.tokens.concat(data)
-    Vue.set(state, 'tokens', state.tokens)
+    Vue.set(state, 'tokens', [...state.tokens])
   },
   [TOKEN_FETCH_SINGLE](state, data) {
     state.tokens.push(data)
-    Vue.set(state, 'tokens', state.tokens)
-  }
+  },
+  [TOKEN_UPDATE_TRANSFER_COST](state, {token, weiAmount}) {
+    Vue.set(state.transferCosts, token.url, weiAmount)
+  },
 }
 
 export default {
@@ -157,5 +170,5 @@ export default {
   state: initialState(),
   getters,
   actions,
-  mutations
+  mutations,
 }
