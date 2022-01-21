@@ -9,17 +9,23 @@ export const TokenMixin = {
     ...mapState('network', ['blockchains']),
     ...mapState('tokens', ['tokens']),
     ...mapGetters('network', ['chainData', 'chainState']),
-    ...mapGetters('tokens', ['tokensByUrl', 'nativeTokensByChain']),
+    ...mapGetters('tokens', ['tokenListsByUrl', 'tokensByUrl', 'nativeTokensByChain']),
     tokenOptions() {
       return Object.values(this.tokensByUrl).map(token => ({
         value: token.url,
         text: `${token.name} / ${token.symbol} / ${token.address}`,
       }))
     },
+    tokenListOptions() {
+      return Object.values(this.tokenListsByUrl).map(tokenList => ({
+        value: tokenList.url,
+        text: tokenList.name,
+      }))
+    },
   },
   filters: {formattedAmount},
   methods: {
-    ...mapActions('tokens', ['fetchToken']),
+    ...mapActions('tokens', ['fetchToken', 'fetchTokenLists']),
     getChainId(token) {
       return token && token.network_id
     },

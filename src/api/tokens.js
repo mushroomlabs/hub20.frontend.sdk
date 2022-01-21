@@ -13,5 +13,8 @@ export default {
   },
   getTransferCostEstimate(token) {
     return this._client.get(`/tokens/${token.network_id}-${token.address}/transfer_cost`)
+  },
+  getTokenLists() {
+    return this._client.get('/tokenlists')
   }
 }

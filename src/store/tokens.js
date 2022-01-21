@@ -2,6 +2,9 @@ import Vue from 'vue'
 
 import client from '../api/tokens'
 
+export const TOKENLIST_FETCH_COLLECTION = 'TOKENLIST_FETCH_COLLECTION'
+export const TOKENLIST_FETCH_SINGLE = 'TOKENLIST_FETCH_SINGLE'
+export const TOKENLIST_FETCH_FAILURE = 'TOKENLIST_FETCH_FAILURE'
 export const TOKEN_FETCH_COLLECTION = 'TOKEN_FETCH_COLLECTION'
 export const TOKEN_FETCH_SINGLE = 'TOKEN_FETCH_SINGLE'
 export const TOKEN_FETCH_FAILURE = 'TOKEN_FETCH_FAILURE'
@@ -114,11 +117,14 @@ export const BASE_TOKEN_LIST = {
 const initialState = () => ({
   tokens: [],
   transferCosts: {},
+  tokenLists: [],
   errors: [],
   initialized: false,
 })
 
 const getters = {
+  tokenListsByUrl: state =>
+    state.tokenLists.reduce((acc, tokenList) => Object.assign({[tokenList.url]: tokenList}, acc), {}),
   tokensByUrl: state =>
     state.tokens.reduce((acc, token) => Object.assign({[token.url]: token}, acc), {}),
   nativeTokens: state => state.tokens.filter(token => token.address == TOKEN_NULL_ADDRESS),
@@ -147,15 +153,31 @@ const actions = {
       .getTransferCostEstimate(token)
       .then(({data}) => commit(TOKEN_UPDATE_TRANSFER_COST, {token, weiAmount: data}))
   },
+  fetchTokenLists({commit, dispatch}) {
+    return client
+      .getTokenLists()
+      .then(({data}) => {
+        commit(TOKENLIST_FETCH_COLLECTION, data)
+        data.forEach(tokenList => tokenList.forEach(tokenUrl => dispatch('fetchToken', tokenUrl)))
+      })
+      .catch(error => commit(TOKENLIST_FETCH_FAILURE, error))
+  }
 }
 
 const mutations = {
+  [TOKENLIST_FETCH_FAILURE](state, error) {
+    state.errors.push(error)
+  },
+  [TOKENLIST_FETCH_COLLECTION](state, data) {
+    const newList = state.tokenLists.concat(data)
+    Vue.set(state, 'tokenLists', newList)
+  },
   [TOKEN_FETCH_FAILURE](state, error) {
     state.errors.push(error)
   },
   [TOKEN_FETCH_COLLECTION](state, data) {
-    state.tokens.concat(data)
-    Vue.set(state, 'tokens', [...state.tokens])
+    const newList = state.tokens.concat(data)
+    Vue.set(state, 'tokens', newList)
   },
   [TOKEN_FETCH_SINGLE](state, data) {
     state.tokens.push(data)

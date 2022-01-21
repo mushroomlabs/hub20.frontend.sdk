@@ -1,4 +1,4 @@
-import stores from '../api/stores'
+import api from '../api/stores'
 
 export const STORE_INITIALIZE = 'STORE_INITIALIZE'
 export const STORE_COLLECTION_SET = 'STORE_COLLECTION_SET'
@@ -9,6 +9,7 @@ export const STORE_EDIT_SET_NAME = 'STORE_EDIT_SET_NAME'
 export const STORE_EDIT_SET_URL = 'STORE_EDIT_SET_URL'
 export const STORE_EDIT_SET_WEBHOOK_URL = 'STORE_EDIT_SET_WEBHOOK_URL'
 export const STORE_EDIT_SET_ACCEPTED_TOKENS = 'STORE_EDIT_SET_ACCEPTED_TOKENS'
+export const STORE_EDIT_SET_TOKEN_LIST = 'STORE_EDIT_SET_TOKEN_LIST'
 export const STORE_EDIT_SUCCESS = 'STORE_EDIT_SUCCESS'
 export const STORE_EDIT_FAILURE = 'STORE_EDIT_FAILURE'
 export const STORE_RESET_STATE = 'STORE_RESET_STATE'
@@ -17,7 +18,7 @@ export const STORE_RESET_STATE = 'STORE_RESET_STATE'
 const initialStoreData = {
   name: '',
   site_url: '',
-  accepted_currencies: []
+  accepted_token_list: null
 }
 
 const initialState = () => ({
@@ -36,26 +37,26 @@ const getters = {
   submissionErrorMessages: state => ({
     name: state && state.submissionErrors && state.submissionErrors.name && state.submissionErrors.name[0],
     siteUrl: state && state.submissionErrors && state.submissionErrors.site_url && state.submissionErrors.site_url[0],
-    acceptedTokens: state && state.submissionErrors && state.submissionErrors.accepted_currencies && state.submissionErrors.accepted_currencies[0],
+    tokenList: state && state.submissionErrors && state.submissionErrors.accepted_token_list && state.submissionErrors.accepted_token_list[0],
   }),
   isLoaded: state => state.initialized
 }
 
 const actions = {
   fetchStores({commit}) {
-    return stores
+    return api
       .getList()
       .then(({data}) => commit(STORE_COLLECTION_SET, data))
       .catch(error => commit(STORE_COLLECTION_SETUP_FAILURE, error.response))
   },
   updateStore({commit}, storeData) {
-    return stores
+    return api
       .update(storeData)
       .then(() => commit(STORE_EDIT_SUCCESS))
       .catch(error => commit(STORE_EDIT_FAILURE, error.response))
   },
   createStore({commit, dispatch}, storeData) {
-    return stores
+    return api
       .create(storeData)
       .then(() => commit(STORE_EDIT_SUCCESS))
       .then(() => dispatch('fetchStores'))
@@ -65,14 +66,14 @@ const actions = {
     const isCached = storeId in getters.storesById
     const storeData = storeId ? getters.storesById[storeId] : initialStoreData
     const storeDataPromise =
-      storeId && !isCached ? stores.get(storeId) : Promise.resolve({data: storeData})
+      storeId && !isCached ? api.get(storeId) : Promise.resolve({data: storeData})
 
     return storeDataPromise
       .then(({data}) => commit(STORE_EDIT_BEGIN, data))
       .catch(error => commit(STORE_EDIT_FAILURE, error))
   },
   removeStore({dispatch}, storeData) {
-    return stores.remove(storeData.id).then(() => dispatch('fetchStores'))
+    return api.remove(storeData.id).then(() => dispatch('fetchStores'))
   },
   initialize({commit, dispatch, getters}) {
     if (!getters.isLoaded) {
@@ -121,6 +122,11 @@ const mutations = {
   [STORE_EDIT_SET_ACCEPTED_TOKENS](state, acceptedTokens) {
     if (state.editingData) {
       state.editingData.accepted_currencies = acceptedTokens
+    }
+  },
+  [STORE_EDIT_SET_TOKEN_LIST](state, tokenListUrl) {
+    if (state.editingData) {
+      state.editingData.accepted_token_list = tokenListUrl
     }
   },
   [STORE_COLLECTION_SET](state, data) {
