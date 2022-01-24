@@ -63,7 +63,7 @@ export default {
       return this.chainData(this.chainId)
     },
     chainId() {
-      return this.token.network_id
+      return this.getChainId(this.token)
     },
     openRoutes() {
       return this.paymentRequest

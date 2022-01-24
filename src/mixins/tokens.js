@@ -27,10 +27,10 @@ export const TokenMixin = {
   methods: {
     ...mapActions('tokens', ['fetchToken', 'fetchTokenLists']),
     getChainId(token) {
-      return token && token.network_id
+      return token && token.chain_id
     },
     getChain(token) {
-      return token && this.chainData(token.network_id)
+      return token && this.chainData(token.chain_id)
     },
     getNativeToken(token) {
       return this.isTokenNative(token) ? token : this.nativeTokensByChain[this.getChainId(token)]

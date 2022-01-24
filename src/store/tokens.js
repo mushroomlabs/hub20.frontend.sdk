@@ -130,7 +130,7 @@ const getters = {
   nativeTokens: state => state.tokens.filter(token => token.address == TOKEN_NULL_ADDRESS),
   nativeTokensByChain: (_, getters) =>
     getters.nativeTokens.reduce(
-      (acc, token) => Object.assign({[token.network_id]: token}, acc),
+      (acc, token) => Object.assign({[token.chain_id]: token}, acc),
       {}
     ),
   nativeToken: (_, getters) => chainId => getters.nativeTokensByChain[chainId],

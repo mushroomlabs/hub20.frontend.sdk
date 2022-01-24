@@ -12,7 +12,7 @@ export default {
     return this._client.get(`/tokens/${chainId}-${address}`)
   },
   getTransferCostEstimate(token) {
-    return this._client.get(`/tokens/${token.network_id}-${token.address}/transfer_cost`)
+    return this._client.get(`/tokens/${token.chain_id}-${token.address}/transfer_cost`)
   },
   getTokenLists() {
     return this._client.get('/tokenlists')
