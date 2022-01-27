@@ -1,14 +1,23 @@
 import Vue from 'vue'
 
-import client from '../api/tokens'
+import {convertToToken, default as client} from '../api/tokens'
 
 export const TOKENLIST_FETCH_COLLECTION = 'TOKENLIST_FETCH_COLLECTION'
 export const TOKENLIST_FETCH_SINGLE = 'TOKENLIST_FETCH_SINGLE'
-export const TOKENLIST_FETCH_FAILURE = 'TOKENLIST_FETCH_FAILURE'
+export const TOKENLIST_FETCH_ERROR = 'TOKENLIST_FETCH_ERROR'
 export const TOKEN_FETCH_COLLECTION = 'TOKEN_FETCH_COLLECTION'
 export const TOKEN_FETCH_SINGLE = 'TOKEN_FETCH_SINGLE'
-export const TOKEN_FETCH_FAILURE = 'TOKEN_FETCH_FAILURE'
+export const TOKEN_FETCH_ERROR = 'TOKEN_FETCH_ERROR'
 export const TOKEN_UPDATE_TRANSFER_COST = 'TOKEN_UPDATE_TRANSFER_COST'
+export const TOKEN_SEARCH_ERROR = 'TOKEN_SEARCH_ERROR'
+
+export const USER_TOKENLIST_FETCH_COLLECTION = 'USER_TOKENLIST_FETCH_COLLECTION'
+export const USER_TOKENLIST_FETCH_SINGLE = 'USER_TOKENLIST_FETCH_SINGLE'
+export const USER_TOKENLIST_FETCH_ERROR = 'USER_TOKENLIST_FETCH_ERROR'
+export const USER_TOKEN_FETCH_COLLECTION = 'USER_TOKEN_FETCH_COLLECTION'
+export const USER_TOKEN_FETCH_SINGLE = 'USER_TOKEN_FETCH_SINGLE'
+export const USER_TOKEN_FETCH_ERROR = 'USER_TOKEN_FETCH_ERROR'
+export const USER_TOKEN_REMOVE_SINGLE = 'USER_TOKEN_REMOVE_SINGLE'
 
 export const TOKEN_NULL_ADDRESS = '0x0000000000000000000000000000000000000000'
 
@@ -118,13 +127,17 @@ const initialState = () => ({
   tokens: [],
   transferCosts: {},
   tokenLists: [],
+  userTokens: [],
+  userTokenLists: [],
   errors: [],
-  initialized: false,
 })
 
 const getters = {
   tokenListsByUrl: state =>
-    state.tokenLists.reduce((acc, tokenList) => Object.assign({[tokenList.url]: tokenList}, acc), {}),
+    state.tokenLists.reduce(
+      (acc, tokenList) => Object.assign({[tokenList.url]: tokenList}, acc),
+      {}
+    ),
   tokensByUrl: state =>
     state.tokens.reduce((acc, token) => Object.assign({[token.url]: token}, acc), {}),
   nativeTokens: state => state.tokens.filter(token => token.address == TOKEN_NULL_ADDRESS),
@@ -134,18 +147,33 @@ const getters = {
       {}
     ),
   nativeToken: (_, getters) => chainId => getters.nativeTokensByChain[chainId],
+  userTokenListsByUrl: state =>
+    state.userTokenLists.reduce(
+      (acc, tokenList) => Object.assign({[tokenList.url]: tokenList}, acc),
+      {}
+    ),
+  userTokensByUrl: state =>
+    state.userTokens.reduce((acc, token) => Object.assign({[token.url]: token}, acc), {}),
 }
 
 const actions = {
+  searchTokens({commit}, {searchTerm, filterParams}) {
+    return client
+      .searchTokens(searchTerm, filterParams)
+      .catch(error => commit(TOKEN_SEARCH_ERROR, error))
+  },
   fetchTokens({commit}, filterOptions) {
     return client
       .getList(filterOptions)
       .then(({data}) => commit(TOKEN_FETCH_COLLECTION, data))
-      .catch(error => commit(TOKEN_FETCH_FAILURE, error))
+      .catch(error => commit(TOKEN_FETCH_ERROR, error))
   },
-  fetchToken({commit, getters}, tokenUrl) {
+  fetchToken({commit}, token) {
+    return client.getToken(token).then(({data}) => commit(TOKEN_FETCH_SINGLE, data))
+  },
+  fetchTokenByUrl({commit, getters}, tokenUrl) {
     if (!getters.tokensByUrl[tokenUrl]) {
-      return client.getToken(tokenUrl).then(({data}) => commit(TOKEN_FETCH_SINGLE, data))
+      return client.getTokenByUrl(tokenUrl).then(({data}) => commit(TOKEN_FETCH_SINGLE, data))
     }
   },
   fetchTransferCostEstimate({commit}, token) {
@@ -158,32 +186,109 @@ const actions = {
       .getTokenLists()
       .then(({data}) => {
         commit(TOKENLIST_FETCH_COLLECTION, data)
-        data.forEach(tokenList => tokenList.forEach(tokenUrl => dispatch('fetchToken', tokenUrl)))
+        data.forEach(tokenList =>
+          tokenList.forEach(tokenUrl => dispatch('fetchTokenByUrl', tokenUrl))
+        )
       })
-      .catch(error => commit(TOKENLIST_FETCH_FAILURE, error))
-  }
+      .catch(error => commit(TOKENLIST_FETCH_ERROR, error))
+  },
+  fetchUserTokens({commit}, filterOptions) {
+    return client
+      .getUserTokens(filterOptions)
+      .then(({data}) => {
+        commit(USER_TOKEN_FETCH_COLLECTION, data)
+        data.forEach(userToken => commit(TOKEN_FETCH_SINGLE, convertToToken(userToken)))
+      })
+      .catch(error => commit(USER_TOKEN_FETCH_ERROR, error))
+  },
+  fetchUserToken({commit}, userToken) {
+    return client
+      .getUserToken(userToken)
+      .then(({data}) => commit(USER_TOKEN_FETCH_SINGLE, data))
+  },
+  fetchUserTokenByUrl({commit, getters}, tokenUrl) {
+    if (!getters.userTokensByUrl[tokenUrl]) {
+      return client
+        .getUserTokenByUrl(tokenUrl)
+        .then(({data}) => commit(USER_TOKEN_FETCH_SINGLE, data))
+    }
+  },
+  fetchUserTokenLists({commit, dispatch}) {
+    return client
+      .getUserTokenLists()
+      .then(({data}) => {
+        commit(USER_TOKENLIST_FETCH_COLLECTION, data)
+        data.forEach(tokenList =>
+          tokenList.forEach(tokenUrl => dispatch('fetchTokenByUrl', tokenUrl))
+        )
+      })
+      .catch(error => commit(USER_TOKENLIST_FETCH_ERROR, error))
+  },
+  trackToken({commit}, token) {
+    return client.trackToken(token).then(({data}) => commit(USER_TOKEN_FETCH_SINGLE, data))
+  },
+  untrackToken({commit}, token) {
+    return client.removeUserToken(token).then(() => commit(USER_TOKEN_REMOVE_SINGLE, token))
+  },
 }
 
 const mutations = {
-  [TOKENLIST_FETCH_FAILURE](state, error) {
-    state.errors.push(error)
+  [TOKENLIST_FETCH_ERROR](state, error) {
+    state.errors.push({TOKENLIST_FETCH_ERROR: error})
   },
   [TOKENLIST_FETCH_COLLECTION](state, data) {
     const newList = state.tokenLists.concat(data)
     Vue.set(state, 'tokenLists', newList)
   },
-  [TOKEN_FETCH_FAILURE](state, error) {
-    state.errors.push(error)
+  [TOKEN_FETCH_ERROR](state, error) {
+    state.errors.push({TOKEN_FETCH_ERROR: error})
   },
   [TOKEN_FETCH_COLLECTION](state, data) {
-    const newList = state.tokens.concat(data)
-    Vue.set(state, 'tokens', newList)
+    const currentTokensByUrl = state.tokens.map(token => token.url)
+    data.forEach(token => {
+      if (!currentTokensByUrl.includes(token.url)) {
+        state.tokens.push(token)
+      }
+    })
   },
   [TOKEN_FETCH_SINGLE](state, data) {
     state.tokens.push(data)
   },
   [TOKEN_UPDATE_TRANSFER_COST](state, {token, weiAmount}) {
     Vue.set(state.transferCosts, token.url, weiAmount)
+  },
+  [TOKEN_SEARCH_ERROR](state, error) {
+    state.errors.push({TOKEN_SEARCH_ERROR: error})
+  },
+  [USER_TOKENLIST_FETCH_ERROR](state, error) {
+    state.errors.push({USER_TOKENLIST_FETCH_ERROR: error})
+  },
+  [USER_TOKENLIST_FETCH_COLLECTION](state, userTokenList) {
+    const newList = state.userTokenLists.concat(userTokenList)
+    Vue.set(state, 'userTokenLists', newList)
+  },
+  [USER_TOKEN_FETCH_ERROR](state, error) {
+    state.errors.push({USER_TOKEN_FETCH_ERROR: error})
+  },
+  [USER_TOKEN_FETCH_COLLECTION](state, data) {
+    const currentTokensByUrl = state.userTokens.map(userToken => userToken.url)
+    data.forEach(userToken => {
+      if (!currentTokensByUrl.includes(userToken.url)) {
+        state.userTokens.push(userToken)
+      }
+    })
+  },
+  [USER_TOKEN_FETCH_SINGLE](state, userToken){
+    const currentTokensByUrl = state.userTokens.map(userToken => userToken.url)
+    if (!currentTokensByUrl.includes(userToken.url)) {
+      state.userTokens.push(userToken)
+    }
+  },
+  [USER_TOKEN_REMOVE_SINGLE](state, token) {
+    const newList = state.userTokens.filter(
+      userToken => !(token.address == userToken.address && token.chain_id == userToken.chain_id)
+    )
+    Vue.set(state, 'userTokens', newList)
   },
 }
 

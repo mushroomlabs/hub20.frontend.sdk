@@ -50,7 +50,7 @@ const mutations = {
     state.initialized = true
   },
   [NETWORK_LOAD_BLOCKCHAIN_LIST](state, data) {
-    state.blockchains = data
+    Vue.set(state, 'blockchains', data)
   },
   [NETWORK_LOAD_BLOCKCHAIN_DATA](state, {chainId, data}) {
     Vue.set(state.chainDataMap, chainId, data)

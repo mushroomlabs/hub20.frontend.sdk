@@ -25,7 +25,7 @@ export const TokenMixin = {
   },
   filters: {formattedAmount},
   methods: {
-    ...mapActions('tokens', ['fetchToken', 'fetchTokenLists']),
+    ...mapActions('tokens', ['fetchToken', 'fetchTokenByUrl', 'fetchTokenLists']),
     getChainId(token) {
       return token && token.chain_id
     },
