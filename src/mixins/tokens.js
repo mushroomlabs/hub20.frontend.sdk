@@ -2,7 +2,7 @@ import {mapActions, mapGetters, mapState} from 'vuex'
 
 import {formattedAmount} from '../filters'
 
-export const TOKEN_NULL_ADDRESS = '0x0000000000000000000000000000000000000000'
+export const NULL_ADDRESS = '0x0000000000000000000000000000000000000000'
 
 export const TokenMixin = {
   computed: {
@@ -36,7 +36,30 @@ export const TokenMixin = {
       return this.isTokenNative(token) ? token : this.nativeTokensByChain[this.getChainId(token)]
     },
     isTokenNative(token) {
-      return token.address == TOKEN_NULL_ADDRESS
+      return token.address == NULL_ADDRESS
+    },
+    getLogoUrl(token) {
+
+      // The token lists provide lots of logo URLs that are actual IPFS addresses.
+      // We can not render these on the browser, unless the user has an extension
+      // installed and/or we install js-ipfs core library, which will add significant
+      // size to the bundle. For now, we just detect ipfs links and render them as
+      // "normal" https ipfs.io gateway
+
+
+      const logoURI = token && token.logoURI
+
+      if (!logoURI) {
+        return
+      }
+
+      const parsedUrl = new URL(logoURI)
+      if (parsedUrl.protocol === 'ipfs:') {
+        let identifier = parsedUrl.pathname.replace('//', '')
+        return `https://ipfs.io/ipfs/${identifier}`
+      }
+
+      return logoURI
     }
   },
 }

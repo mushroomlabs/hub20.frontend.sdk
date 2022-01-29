@@ -1,16 +1,22 @@
 import {mapActions, mapGetters, mapState} from 'vuex'
 
-import {convertToToken} from '../api/tokens.js'
+import {convertToToken} from '../api/tokens'
+
+import {NULL_ADDRESS} from './tokens'
 
 export const UserTokenMixin = {
   computed: {
-    ...mapState('tokens', ['userTokens']),
+    ...mapState('tokens', ['userTokens', 'userTokenLists']),
     ...mapGetters('tokens', ['userTokenListsByUrl', 'userTokensByUrl', 'tokensByUrl']),
     userTokenOptions() {
-      return Object.values(this.userTokensByUrl).map(token => ({
-        value: token.url,
-        text: `${token.name} / ${token.symbol} / ${token.address}`,
-      }))
+      return Object.values(this.userTokensByUrl).map(userToken => {
+        const address = (userToken.address == NULL_ADDRESS) ? 'Native token' : userToken.address
+
+        return {
+          value: userToken.token,
+          text: `${userToken.name} (${userToken.symbol}) - ${address} @ chain #${userToken.chain_id}`,
+        }
+      })
     },
     userTokenListOptions() {
       return Object.values(this.userTokenListsByUrl).map(tokenList => ({

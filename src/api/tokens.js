@@ -1,6 +1,6 @@
 import client from './client'
 
-export const convertToToken = (userToken) => {
+export const convertToToken = userToken => {
   const tokenUrl = userToken.token
   const token = {...userToken}
   delete token.token
@@ -9,53 +9,75 @@ export const convertToToken = (userToken) => {
   return token
 }
 
+export const resolveTokenUrl = token => `/tokens/${token.chain_id}-${token.address}`
+export const resolveUserTokenUrl = token => `/my/tokens/${token.chain_id}-${token.address}`
+
 export default {
   _client: client,
-  getList(params) {
-    return this._client.get('/tokens', {params})
-  },
-  getTokenByUrl(tokenUrl) {
-    return this._client.get(tokenUrl)
-  },
-  getToken(token) {
-    return this._client.get(this.resolveTokenUrl(token))
-  },
-  getTransferCostEstimate(token) {
-    return this._client.get(`/tokens/${token.chain_id}-${token.address}/transfer_cost`)
-  },
-  getTokenLists() {
-    return this._client.get('/tokenlists')
-  },
-  getUserTokens(params) {
-    return this._client.get('/my/tokens', {params})
-  },
-  getUserTokenByUrl(userTokenUrl) {
-    return this._client.get(userTokenUrl)
-  },
-  getUserToken(userToken) {
-    return this._client.get(this.resolveUserTokenUrl(userToken))
-  },
-  trackToken(token) {
-    const tokenUrl = this.resolveTokenUrl(token)
-    return this._client.post('/my/tokens', {token: tokenUrl})
-  },
-  removeUserToken(token) {
-    const userTokenUrl = this.resolveUserTokenUrl(token)
-    return this._client.delete(userTokenUrl)
-  },
-  searchTokens(searchTerm, filterParams){
-    const params = {...filterParams}
+  token: {
+    getList(params) {
+      return client.get('/tokens', {params})
+    },
+    getByUrl(tokenUrl) {
+      return client.get(tokenUrl)
+    },
+    get(token) {
+      return client.get(resolveTokenUrl(token))
+    },
+    getTransferCostEstimate(token) {
+      return client.get(`/tokens/${token.chain_id}-${token.address}/transfer_cost`)
+    },
+    getExtraInfo(token) {
+      return client.get(`/tokens/${token.chain_id}-${token.address}/info`)
+    },
+    search(searchTerm, filterParams) {
+      const params = {...filterParams}
 
-    if (searchTerm) {
-      params['search'] = searchTerm
-    }
+      if (searchTerm) {
+        params['search'] = searchTerm
+      }
 
-    return this.getList(params)
+      return this.getList(params)
+    },
   },
-  resolveTokenUrl(token) {
-    return `/tokens/${token.chain_id}-${token.address}`
+  userToken: {
+    getList(params) {
+      return client.get('/my/tokens', {params})
+    },
+    getByUrl(userTokenUrl) {
+      return client.get(userTokenUrl)
+    },
+    get(userToken) {
+      return client.get(resolveUserTokenUrl(userToken))
+    },
+    track(token) {
+      const tokenUrl = resolveTokenUrl(token)
+      return client.post('/my/tokens', {token: tokenUrl})
+    },
+    remove(token) {
+      const userTokenUrl = resolveUserTokenUrl(token)
+      return client.delete(userTokenUrl)
+    },
   },
-  resolveUserTokenUrl(token) {
-    return `/my/tokens/${token.chain_id}-${token.address}`
-  }
+  tokenList: {
+    getList() {
+      return client.get('/tokenlists')
+    },
+  },
+  userTokenList: {
+    getList() {
+      return client.get('/my/tokenlists')
+    },
+    getById(tokenListId) {
+      return client.get(`/my/tokenlists/${tokenListId}`)
+    },
+    create(tokenListData) {
+      const {name, description, tokens, keywords} = tokenListData
+      return client.post('/my/tokenlists', {name, description, tokens, keywords})
+    },
+    update(tokenList) {
+      const {url, name, description, tokens, keywords} = tokenList
+      return client.put(url, {name, description, tokens, keywords})
+    },
+  },
 }
