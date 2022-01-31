@@ -2,70 +2,66 @@ import Vue from 'vue'
 
 import client from '../api/network'
 
-export const NETWORK_SET_ETHEREUM_NODE_OFFLINE = 'NETWORK_SET_ETHEREUM_NODE_OFFLINE'
-export const NETWORK_SET_ETHEREUM_NODE_ONLINE = 'NETWORK_SET_ETHEREUM_NODE_ONLINE'
-export const NETWORK_SET_ETHEREUM_NODE_SYNCED = 'NETWORK_SET_ETHEREUM_NODE_SYNCED'
-export const NETWORK_SET_ETHEREUM_NETWORK = 'NETWORK_SET_ETHEREUM_NETWORK'
-export const NETWORK_SET_ETHEREUM_ONLINE_STATUS = 'NETWORK_SET_ETHEREUM_ONLINE_STATUS'
-export const NETWORK_SET_ETHEREUM_SYNCED_STATUS = 'NETWORK_SET_ETHEREUM_SYNCED_STATUS'
-export const NETWORK_SET_ETHEREUM_CURRENT_BLOCK = 'NETWORK_SET_ETHEREUM_CURRENT_BLOCK'
+export const NETWORK_SET_INITIALIZED = 'NETWORK_SET_INITIALIZED'
+export const NETWORK_LOAD_BLOCKCHAIN_LIST = 'NETWORK_LOAD_BLOCKCHAIN_LIST'
+export const NETWORK_LOAD_BLOCKCHAIN_DATA = 'NETWORK_LOAD_BLOCKCHAIN_DATA'
+export const NETWORK_SET_BLOCKCHAIN_HEIGHT = 'NETWORK_SET_BLOCKCHAIN_HEIGHT'
 
 const initialState = () => ({
-  ethereum: {
-    network: null,
-    synced: false,
-    online: false,
-    currentBlock: null
-  }
+  blockchains: [],
+  chainDataMap: {},
+  initialized: false
 })
 
 const getters = {
-  ethereumNetworkId: state => state.ethereum.network,
-  ethereumNodeOk: state => state.ethereum.synced && state.ethereum.online,
-  ethereumOnline: state => state.ethereum.online,
-  ethereumSynced: state => state.ethereum.synced,
-  currentBlock: state => state.ethereum.currentBlock
+  activeChainIds: state => state.blockchains.map(chain => chain.id),
+  chainsById: state => state.blockchains.reduce((acc, chain) => Object.assign({[chain.id]: chain}, acc), {}),
+  chainData: (_, getters) => chainId => getters.chainsById[chainId],
+  chainState: state => chainId => state.chainDataMap[chainId],
+  IsNodeOnline: (_, getters) => chainId => getters.chainState(chainId) && getters.chainState(chainId).online,
+  IsNodeSynced: (_, getters) => chainId => getters.chainState(chainId) && getters.chainState(chainId).synced,
+  currentBlock: (_, getters) => chainId => getters.chainState(chainId) && getters.chainState(chainId).height,
+  isLoaded: state => state.initialized
 }
 
 const actions = {
-  getStatus({commit}) {
-    client.getStatus().then(({data}) => {
-      commit(NETWORK_SET_ETHEREUM_NETWORK, data.ethereum.network)
-      commit(NETWORK_SET_ETHEREUM_ONLINE_STATUS, data.ethereum.online)
-      commit(NETWORK_SET_ETHEREUM_SYNCED_STATUS, data.ethereum.synced)
-      commit(NETWORK_SET_ETHEREUM_CURRENT_BLOCK, data.ethereum.height)
+  getBlockchains({commit}) {
+    return client.getBlockchainList().then(({data}) => {
+      commit(NETWORK_LOAD_BLOCKCHAIN_LIST, data)
     })
   },
-  initialize({dispatch}) {
-    return dispatch('getStatus')
+  getStatus({commit}, chainId) {
+    return client.getBlockchainStatus(chainId).then(({data}) => {
+      commit(NETWORK_LOAD_BLOCKCHAIN_DATA, {chainId, data})
+    })
   },
-  refresh({dispatch}) {
-    return dispatch('getStatus')
+  initialize({commit, dispatch, getters}) {
+    if (!getters.isLoaded) {
+      return dispatch('getBlockchains').then(() => {
+        getters.activeChainIds.forEach(chainId => dispatch('getStatus', chainId))
+        commit(NETWORK_SET_INITIALIZED)
+      })
+    }
   }
 }
 
 const mutations = {
-  [NETWORK_SET_ETHEREUM_NODE_OFFLINE](state) {
-    Vue.set(state.ethereum, 'online', false)
-    Vue.set(state.ethereum, 'synced', false)
+  [NETWORK_SET_INITIALIZED](state) {
+    state.initialized = true
   },
-  [NETWORK_SET_ETHEREUM_NODE_ONLINE](state) {
-    Vue.set(state.ethereum, 'online', true)
+  [NETWORK_LOAD_BLOCKCHAIN_LIST](state, data) {
+    Vue.set(state, 'blockchains', data)
   },
-  [NETWORK_SET_ETHEREUM_NODE_SYNCED](state) {
-    Vue.set(state.ethereum, 'synced', true)
+  [NETWORK_LOAD_BLOCKCHAIN_DATA](state, {chainId, data}) {
+    Vue.set(state.chainDataMap, chainId, data)
   },
-  [NETWORK_SET_ETHEREUM_NETWORK](state, networkId) {
-    Vue.set(state.ethereum, 'network', networkId)
-  },
-  [NETWORK_SET_ETHEREUM_ONLINE_STATUS](state, onlineStatus) {
-    Vue.set(state.ethereum, 'online', onlineStatus)
-  },
-  [NETWORK_SET_ETHEREUM_SYNCED_STATUS](state, syncedStatus) {
-    Vue.set(state.ethereum, 'synced', syncedStatus)
-  },
-  [NETWORK_SET_ETHEREUM_CURRENT_BLOCK](state, blockNumber) {
-    Vue.set(state.ethereum, 'currentBlock', blockNumber)
+  [NETWORK_SET_BLOCKCHAIN_HEIGHT](state, {chainId, blockNumber}) {
+    const chainDataMap = {...state.chainDataMap}
+
+    if (chainDataMap[chainId]) {
+      chainDataMap[chainId].height = blockNumber
+      Vue.set(state, 'chainDataMap', chainDataMap)
+    }
   }
 }
 

@@ -16,26 +16,27 @@ export const CHECKOUT_SET_PAYMENT_RECEIVED = 'CHECKOUT_SET_PAYMENT_RECEIVED'
 export const CHECKOUT_SET_PAYMENT_CONFIRMED = 'CHECKOUT_SET_PAYMENT_CONFIRMED'
 export const CHECKOUT_SET_EXPIRED = 'CHECKOUT_SET_EXPIRED'
 export const CHECKOUT_WEBSOCKET_OPEN = 'CHECKOUT_WEBSOCKET_OPEN'
+export const CHECKOUT_WEBSOCKET_CLOSE = 'CHECKOUT_WEBSOCKET_CLOSE'
 
 const initialState = () => ({
   merchantStore: null,
   checkout: null,
-  handlers: null,
   charge: null,
   websocket: null,
+  supportsWebsocket: true,
 })
 
 const getters = {
   isLoaded: state => Boolean(state.merchantStore),
   isReady: (state, getters) => getters.isLoaded && Boolean(state.checkout),
   storeId: state => state.merchantStore && state.merchantStore.id,
-  onCheckoutCanceled: state => state.handlers && state.handlers.onCheckoutCanceled,
-  onCheckoutFinished: state => state.handlers && state.handlers.onCheckoutFinished,
   checkoutId: state => state.checkout && state.checkout.id,
+  hasActiveConnection: state => state.websocket && state.websocket.readyState === WebSocket.OPEN,
   chargeCurrencyCode: state => state.charge && state.charge.currencyCode,
   chargeAmount: state => state.charge && state.charge.amount,
   externalIdentifier: state => state.charge && state.charge.externalIdentifier,
-  payments: state => state.checkout && state.checkout.payments,
+  payments: state => (state.checkout && state.checkout.payments) || [],
+  confirmedPayments: (_, getters) => getters.payments.filter(payment => payment.confirmed),
   paymentToken: (state, getters, _, rootGetters) => {
     let tokenUrl = state.checkout && state.checkout.token
     return tokenUrl && rootGetters['tokens/tokensByUrl'][tokenUrl]
@@ -43,20 +44,35 @@ const getters = {
   tokenPayments: (state, getters) => {
     let token = getters.paymentToken
     return (
-      (token &&
+      (token && getters.payments &&
         getters.payments.filter(payment => payment.currency.address == token.address)) ||
       []
     )
   },
   totalAmountPaid: (state, getters) =>
-    getters.payments.reduce((acc, payment) => acc + payment.amount, 0),
-  isPaid: (state, getters) => getters.totalAmountPaid >= getters.tokenAmountDue,
-  isExpired: state => state.checkout && state.checkout.status === 'expired',
-  isFinalized: state => state.checkout && state.checkout.status !== 'open',
-  tokenAmountDue: (state, getters, _, rootGetters) => token => {
-    let exchangeRate = rootGetters['coingecko/exchangeRate'](token)
-    let tokenAmount = getters.chargeAmount && getters.chargeAmount / exchangeRate
-    return tokenAmount && Decimal(tokenAmount).toDecimalPlaces(token.decimals)
+    getters.payments ? getters.tokenPayments.reduce((acc, payment) => acc + payment.amount, 0) : 0,
+  totalAmountConfirmed: getters =>
+    getters.confirmedPayments ? getters.confirmedPayments.reduce((acc, payment) => acc + payment.amount, 0) : 0,
+  hasPartialPayment: (state, getters) => {
+    return getters.totalAmountPaid > 0 && getters.totalAmountPaid < state.checkout.amount
+  },
+  hasPartialConfirmation: (state, getters) => {
+    return (
+      getters.totalAmountConfirmed > 0 && getters.totalAmountConfirmed < state.checkout.amount
+    )
+  },
+  isConfirmed: state => Boolean(state.checkout && state.checkout.status === 'confirmed'),
+  isExpired: state => Boolean(state.checkout && state.checkout.status === 'expired'),
+  isOpen: state => Boolean(state.checkout && state.checkout.status === 'open'),
+  isProcessing: state => Boolean(state.checkout && state.checkout.status === 'paid'),
+  isPaid: (_, getters) => Boolean(getters.tokenAmountDue) && getters.tokenAmountDue.lte(getters.totalAmountPaid),
+  isFinalized: state =>
+    Boolean(state.checkout) && ['expired', 'confirmed'].includes(state.checkout.status),
+  tokenAmountDue: (state, getters) => {
+    if (!state.checkout) return null
+    if (!state.checkout.amount) return null
+
+    return Decimal(state.checkout.amount).toDecimalPlaces(getters.paymentToken.decimals)
   },
   pendingAmountDue: (state, getters) => {
     if (!state.checkout) return null
@@ -66,7 +82,9 @@ const getters = {
       (acc, payment) => acc.add(Decimal(payment.amount)),
       Decimal(0)
     )
-    return Decimal(state.checkout.amount).minus(received)
+
+    const dueAmount = Decimal(state.checkout.amount).minus(received)
+    return dueAmount.gte(0) ? dueAmount : Decimal(0)
   },
   acceptedTokens: (state, getters, rootState) => {
     let allTokens = rootState.tokens.tokens
@@ -85,46 +103,51 @@ const mutations = {
   [CHECKOUT_SET_DATA](state, checkoutData) {
     state.checkout = checkoutData
   },
-  [CHECKOUT_SET_OPTIONAL_HANDLERS](state, options) {
-    state.handlers = {
-      onCheckoutFinished: options && options.onComplete,
-      onCheckoutCanceled: options && options.onCancel,
-    }
-  },
   [CHECKOUT_RESET](state) {
     state.checkout = null
 
     if (state.websocket) {
       state.websocket.close()
+      state.websocket = null
     }
   },
   [CHECKOUT_WEBSOCKET_OPEN](state, websocket) {
     state.websocket = websocket
   },
+  [CHECKOUT_WEBSOCKET_CLOSE](state) {
+    if (state.websocket) {
+      state.websocket.close()
+      state.websocket = null
+    }
+  },
 }
 
 const actions = {
-  startCheckout({commit, getters, state}, token) {
-    let tokenAmount = getters.tokenAmountDue(token)
-
+  start({state, commit, getters}, {token, tokenAmount}) {
     return client
       .create({
         storeData: state.merchantStore,
         externalIdentifier: getters.externalIdentifier,
+        tokenAmount: Number(tokenAmount).toFixed(token.decimals),
         token,
-        tokenAmount,
       })
       .then(({data}) => {
         commit(CHECKOUT_SET_DATA, data)
       })
   },
-  leaveCheckout({commit, getters, state}) {
-    if (getters.onCheckoutCanceled) {
-      getters.onCheckoutCanceled(state.checkout)
-    }
+  reset({commit}) {
     commit(CHECKOUT_RESET)
   },
-  fetchCheckout({commit}, checkoutId) {
+  openWebsocket({commit, rootGetters}, checkoutId) {
+    const url = rootGetters['server/checkoutEventWebsocketUrl'](checkoutId)
+    const ws = new WebSocket(url)
+    commit(CHECKOUT_WEBSOCKET_OPEN, ws)
+    return new Promise(resolve => resolve(ws))
+  },
+  closeWebsocket({commit}) {
+    commit(CHECKOUT_WEBSOCKET_CLOSE)
+  },
+  fetch({commit}, checkoutId) {
     return client.fetch(checkoutId).then(({data}) => commit(CHECKOUT_SET_DATA, data))
   },
 }

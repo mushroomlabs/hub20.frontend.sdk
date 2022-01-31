@@ -54,7 +54,7 @@ const actions = {
   },
   fetchRate({commit, getters, state}, token) {
     const currencyCode = state.baseCurrency
-    const isMainnet = token.network_id == ETHEREUM_NETWORKS.mainnet
+    const isMainnet = token.chain_id == ETHEREUM_NETWORKS.mainnet
     const address = isMainnet ? token.address : BASE_TOKEN_LIST[token.code]
     const coingeckoToken = address && getters.tokenByAddress(address)
 
@@ -72,7 +72,7 @@ const actions = {
     return dispatch('fetchCoingeckoTokenList')
   },
   fetchTokenLogoUrl({commit, getters}, token) {
-    const isMainnet = token.network_id == ETHEREUM_NETWORKS.mainnet
+    const isMainnet = token.chain_id == ETHEREUM_NETWORKS.mainnet
     const address = isMainnet ? token.address : BASE_TOKEN_LIST[token.code]
     const coingeckoToken = address && getters.tokenByAddress(address)
 

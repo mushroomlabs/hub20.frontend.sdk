@@ -5,6 +5,7 @@ import checkout from './checkout'
 import coingecko from './coingecko'
 import funding from './funding'
 import network from './network'
+import raiden from './raiden'
 import server from './server'
 import stores from './stores'
 import tokens from './tokens'
@@ -18,6 +19,7 @@ export default {
   coingecko,
   funding,
   network,
+  raiden,
   server,
   stores,
   tokens,

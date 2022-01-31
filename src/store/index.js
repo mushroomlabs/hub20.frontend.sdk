@@ -8,14 +8,16 @@ import funding from './funding'
 import network from './network'
 import notifications from './notifications'
 import password from './password'
+import raiden from './raiden'
 import server from './server'
 import signup from './signup'
 import stores from './stores'
 import tokenModule, * as tokens from './tokens'
 import users from './users'
 import web3 from './web3'
+import types from './types'
 
-export {events, tokens}
+export {events, tokens, types}
 
 
 export default {
@@ -24,16 +26,17 @@ export default {
   auth,
   checkout,
   coingecko,
+  events,
   funding,
   network,
   notifications,
   password,
+  raiden,
   server,
   signup,
   stores,
   users,
   web3,
-  events,
   EVENT_TYPES,
   tokens: tokenModule
 }

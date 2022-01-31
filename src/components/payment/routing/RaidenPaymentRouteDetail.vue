@@ -1,9 +1,5 @@
 <template>
-  <div class="payment-route-detail blockchain">
-    <PaymentRouteBlockchainTimer
-      :created_on="route.start_block"
-      :expires_on="route.expiration_block"
-    />
+  <div class="payment-route-detail raiden">
     <dl>
       <dt v-if="amount">Amount</dt>
       <dd v-if="amount">
@@ -17,19 +13,23 @@
           {{ route.address }}
         </ClipboardCopier>
       </dd>
+      <dt>Payment Identifier</dt>
+      <dd>
+        <ClipboardCopier :value="route.identifier">
+          {{ route.identifier }}
+        </ClipboardCopier>
+      </dd>
     </dl>
   </div>
 </template>
 
 <script>
 import Decimal from 'decimal.js-light'
-import PaymentRouteBlockchainTimer from './PaymentRouteBlockchainTimer'
 import ClipboardCopier from '../../ClipboardCopier'
 
 export default {
   components: {
     ClipboardCopier,
-    PaymentRouteBlockchainTimer,
   },
   props: {
     route: Object,
@@ -38,6 +38,7 @@ export default {
       required: false,
     },
     token: Object,
+    chain: Object
   },
 }
 </script>

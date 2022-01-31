@@ -10,10 +10,13 @@ export {default as filters} from './filters'
 export {default as mixins} from './mixins'
 export {default as store} from './store'
 
+import * as types from './store/types'
+
 export default {
   api,
   components,
   filters,
   mixins,
-  store
+  store,
+  types
 }

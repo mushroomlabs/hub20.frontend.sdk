@@ -16,14 +16,16 @@ export const AUTH_RESET_STATE = 'AUTH_RESET_STATE'
 
 const initialState = () => ({
   authenticating: false,
-  error: false,
+  error: null,
   username: null,
   token: null
 })
 
 const getters = {
   isAuthenticated: state => !!state.token,
-  loggedUsername: (state, getters) => getters.isAuthenticated && state.username
+  loggedUsername: (state, getters) => getters.isAuthenticated && state.username,
+  errorMessage: (_, getters) => getters.submissionErrors && getters.submissionErrors[0],
+  submissionErrors: state => (state.error && state.error.response.data.non_field_errors) || []
 }
 
 const actions = {
@@ -35,8 +37,8 @@ const actions = {
         commit(AUTH_SET_TOKEN, data.key)
         commit(AUTH_SET_USERNAME, username)
       })
-      .then(() => commit(LOGIN_SUCCESS))
-      .catch(() => commit(LOGIN_FAILURE))
+      .then(() => commit(LOGIN_SUCCESS, username))
+      .catch((error) => commit(LOGIN_FAILURE, error))
   },
   logout({commit}) {
     return auth
@@ -67,19 +69,19 @@ const actions = {
 const mutations = {
   [LOGIN_BEGIN](state) {
     state.authenticating = true
-    state.error = false
+    state.error = null
   },
-  [LOGIN_FAILURE](state) {
+  [LOGIN_FAILURE](state, error) {
     state.authenticating = false
-    state.error = true
+    state.error = error
   },
-  [LOGIN_SUCCESS](state) {
-    state.authenticating = false
-    state.error = false
+  [LOGIN_SUCCESS](state, username) {
+    state.username = username
+    state.error = null
   },
   [LOGOUT](state) {
     state.authenticating = false
-    state.error = false
+    state.error = null
   },
   [AUTH_SET_TOKEN](state, token) {
     localStorage.setItem(TOKEN_STORAGE_KEY, token)

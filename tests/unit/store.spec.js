@@ -3,8 +3,6 @@ import Vuex from 'vuex'
 
 import {EVENT_TYPES} from '@/store'
 
-import coingeckoAPI from '@/api/coingecko'
-
 import createStoreConfig from '../__mocks__/storeConfig'
 import mockCoingeckoTokenList from '../__mocks__/coingecko/tokens.json'
 
