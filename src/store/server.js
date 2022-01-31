@@ -11,7 +11,7 @@ export const SERVER_SET_URL_SUCCESS = 'SERVER_SET_URL_SUCCESS'
 export const SERVER_SET_URL_FAILURE = 'SERVER_SET_URL_FAILURE'
 export const SERVER_CLEAR_URL = 'SERVER_CLEAR_URL'
 
-const COMPATIBLE_VERSIONS = '^0.2 || ^0.3'
+const COMPATIBLE_VERSIONS = '^0.4'
 
 const initialState = () => ({
   rootUrl: null,
