@@ -38,6 +38,7 @@ const getters = {
     name: state && state.submissionErrors && state.submissionErrors.name && state.submissionErrors.name[0],
     siteUrl: state && state.submissionErrors && state.submissionErrors.site_url && state.submissionErrors.site_url[0],
     tokenList: state && state.submissionErrors && state.submissionErrors.accepted_token_list && state.submissionErrors.accepted_token_list[0],
+    webhookUrl: state && state.submissionErrors && state.submissionErrors.checkout_webhook_url && state.submissionErrors.checkout_webhook_url[0],
   }),
   isLoaded: state => state.initialized
 }
@@ -101,8 +102,8 @@ const mutations = {
   [STORE_EDIT_SUCCESS](state) {
     state.submissionErrors = null
   },
-  [STORE_EDIT_FAILURE](state, error) {
-    state.submissionErrors = error.response.data
+  [STORE_EDIT_FAILURE](state, errorResponse) {
+    state.submissionErrors = errorResponse.data
   },
   [STORE_EDIT_SET_NAME](state, name) {
     if (state.editingData) {

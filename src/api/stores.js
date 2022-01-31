@@ -18,7 +18,11 @@ export default {
     return this._client.get(`/my/stores/${storeId}`)
   },
   update(storeData) {
-    const {url, name, site_url, accepted_token_list, checkout_webhook_url} = storeData
+    const {url, name, site_url, accepted_token_list} = storeData
+
+    // We don't want to allow empty strings or other falsy values.
+    const checkout_webhook_url = storeData.checkout_webhook_url || null
+
     return this._client.put(url, {name, site_url, accepted_token_list, checkout_webhook_url})
   },
   remove(storeId) {
