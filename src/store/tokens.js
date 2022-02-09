@@ -9,6 +9,7 @@ export const TOKEN_FETCH_COLLECTION = 'TOKEN_FETCH_COLLECTION'
 export const TOKEN_FETCH_SINGLE = 'TOKEN_FETCH_SINGLE'
 export const TOKEN_FETCH_ERROR = 'TOKEN_FETCH_ERROR'
 export const TOKEN_UPDATE_TRANSFER_COST = 'TOKEN_UPDATE_TRANSFER_COST'
+export const TOKEN_SET_ROUTES = 'TOKEN_SET_ROUTES'
 export const TOKEN_SEARCH_ERROR = 'TOKEN_SEARCH_ERROR'
 
 export const USER_TOKENLIST_FETCH_COLLECTION = 'USER_TOKENLIST_FETCH_COLLECTION'
@@ -142,6 +143,7 @@ const initialTokenListData = () => ({
 const initialState = () => ({
   tokens: [],
   transferCosts: {},
+  routes: {},
   tokenLists: [],
   userTokens: [],
   userTokenLists: [],
@@ -198,6 +200,11 @@ const actions = {
     return client
       .token.getTransferCostEstimate(token)
       .then(({data}) => commit(TOKEN_UPDATE_TRANSFER_COST, {token, weiAmount: data}))
+  },
+  fetchRoutes({commit}, token) {
+    return client
+      .token.getRoutes(token)
+      .then(({data}) => commit(TOKEN_SET_ROUTES, {token, routes: data}))
   },
   fetchTokenLists({commit, dispatch}) {
     return client
@@ -292,6 +299,9 @@ const mutations = {
   },
   [TOKEN_UPDATE_TRANSFER_COST](state, {token, weiAmount}) {
     Vue.set(state.transferCosts, token.url, weiAmount)
+  },
+  [TOKEN_SET_ROUTES](state, {token, routes}) {
+    Vue.set(state.routes, token.url, routes)
   },
   [TOKEN_SEARCH_ERROR](state, error) {
     state.errors.push({error, type: TOKEN_SEARCH_ERROR})

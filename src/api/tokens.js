@@ -27,6 +27,9 @@ export default {
     getTransferCostEstimate(token) {
       return client.get(`/tokens/${token.chain_id}-${token.address}/transfer_cost`)
     },
+    getRoutes(token) {
+      return client.get(`/tokens/${token.chain_id}-${token.address}/routes`)
+    },
     getExtraInfo(token) {
       return client.get(`/tokens/${token.chain_id}-${token.address}/info`)
     },
