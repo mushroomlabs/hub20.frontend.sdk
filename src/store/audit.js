@@ -28,7 +28,7 @@ const getters = {
     state.accountingBooks && state.accountingBooks.external_addresses,
   walletAddresses: state => state.wallets && Object.keys(state.wallets),
   walletBalances: state => (address, token) => {
-    let walletBalances = state.wallets && state.wallets[address]
+    const walletBalances = state.wallets && state.wallets[address]
     return walletBalances && getTokenBalance(walletBalances, token)
   }
 }
