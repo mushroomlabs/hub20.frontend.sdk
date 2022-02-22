@@ -189,17 +189,16 @@ const actions = {
   fetchToken({commit}, token) {
     return client.token.get(token).then(({data}) => commit(TOKEN_FETCH_SINGLE, data))
   },
-  fetchTokenByUrl({commit, getters}, tokenUrl) {
-    if (!getters.tokensByUrl[tokenUrl]) {
-      return client.token.getByUrl(tokenUrl).then(({data}) => commit(TOKEN_FETCH_SINGLE, data))
-    }
+  fetchTokenByUrl({commit}, tokenUrl) {
+    return client.token.getByUrl(tokenUrl).then(({data}) => {
+      commit(TOKEN_FETCH_SINGLE, data)
+      return data
+    })
   },
-  fetchNativeToken({commit, getters}, token) {
-    if (!getters.nativeToken(token.chain_id)) {
-      return client
-        .token.getNativeToken(token)
-        .then(({data}) => commit(TOKEN_FETCH_SINGLE, data))
-    }
+  fetchNativeToken({commit}, chainId) {
+    return client.token
+                 .getNativeToken(chainId)
+                 .then(({data}) => commit(TOKEN_FETCH_SINGLE, data))
   },
   fetchTransferCostEstimate({commit}, token) {
     return client

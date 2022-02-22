@@ -28,8 +28,8 @@ export default {
     get(token) {
       return client.get(resolveTokenUrl(token))
     },
-    getNativeToken(token) {
-      return client.get(`/tokens/${token.chain_id}-${NATIVE_TOKEN_ADDRESS}`)
+    getNativeToken(chainId) {
+      return client.get(`/tokens/${chainId}-${NATIVE_TOKEN_ADDRESS}`)
     },
     getTransferCostEstimate(token) {
       return client.get(`/tokens/${token.chain_id}-${token.address}/transfer_cost`)
