@@ -1,3 +1,5 @@
+import Decimal from 'decimal.js-light'
+
 import client from '../api/audit'
 
 export const AUDIT_FETCH_ACCOUNTING_REPORT_BEGIN = 'AUDIT_FETCH_ACCOUNTING_REPORT_BEGIN'
@@ -22,14 +24,18 @@ const initialState = () => ({
 const getters = {
   treasuryBook: state => state.accountingBooks && state.accountingBooks.treasury,
   userBook: state => state.accountingBooks && state.accountingBooks.user_accounts,
-  walletBook: state => state.accountingBooks && state.accountingBooks.wallets,
   raidenBook: state => state.accountingBooks && state.accountingBooks.raiden,
   externalAccountBook: state =>
     state.accountingBooks && state.accountingBooks.external_addresses,
-  walletAddresses: state => state.wallets && Object.keys(state.wallets),
-  walletBalances: state => (address, token) => {
-    const walletBalances = state.wallets && state.wallets[address]
-    return walletBalances && getTokenBalance(walletBalances, token)
+  walletsByUrl: state =>
+    state.wallets.reduce((acc, wallet) => Object.assign({[wallet.url]: wallet}, acc), {}),
+  walletsByAddress: state =>
+    state.wallets.reduce((acc, wallet) => Object.assign({[wallet.address]: wallet}, acc), {}),
+  walletAddresses: state => state.wallets.map(wallet => wallet.address),
+  onChainTokenBalance: (_, getters) => (address, token) => {
+    const wallet = getters.walletsByAddress[address]
+    const tokenBalance = wallet && wallet.balances && getTokenBalance(wallet.balances, token)
+    return tokenBalance ? new Decimal(tokenBalance.balance) : new Decimal(0)
   }
 }
 
