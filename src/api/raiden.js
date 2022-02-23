@@ -26,4 +26,7 @@ export default {
   createChannelDepositRequest(raidenId, channelId, amount) {
     return this._client.post(`/networks/raiden/nodes/${raidenId}/channels/${channelId}/deposits`, {amount})
   },
+  createChannelWithdrawalRequest(raidenId, channelId, amount) {
+    return this._client.post(`/networks/raiden/nodes/${raidenId}/channels/${channelId}/withdrawals`, {amount})
+  },
 }

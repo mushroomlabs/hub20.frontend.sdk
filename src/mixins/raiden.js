@@ -21,6 +21,9 @@ export const RaidenMixin = {
     chainName() {
       return this.chain && this.chain.name
     },
+    openChannels() {
+      return this.raiden.channels.filter(channel => channel.status == 'opened')
+    },
     serviceTokenUrl() {
       return this.raiden.service_deposit_balance && this.raiden.service_deposit_balance.token
     },

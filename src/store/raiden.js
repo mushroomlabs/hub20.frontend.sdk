@@ -14,6 +14,8 @@ export const RAIDEN_CREATE_SERVICE_DEPOSIT_REQUEST_SUCCESS = 'RAIDEN_CREATE_SERV
 export const RAIDEN_CREATE_SERVICE_DEPOSIT_REQUEST_FAILURE = 'RAIDEN_CREATE_SERVICE_DEPOSIT_REQUEST_FAILURE'
 export const RAIDEN_CREATE_CHANNEL_DEPOSIT_REQUEST_SUCCESS = 'RAIDEN_CREATE_CHANNEL_DEPOSIT_REQUEST_SUCCESS'
 export const RAIDEN_CREATE_CHANNEL_DEPOSIT_REQUEST_FAILURE = 'RAIDEN_CREATE_CHANNEL_DEPOSIT_REQUEST_FAILURE'
+export const RAIDEN_CREATE_CHANNEL_WITHDRAWAL_REQUEST_SUCCESS = 'RAIDEN_CREATE_CHANNEL_WITHDRAWAL_REQUEST_SUCCESS'
+export const RAIDEN_CREATE_CHANNEL_WITHDRAWAL_REQUEST_FAILURE = 'RAIDEN_CREATE_CHANNEL_WITHDRAWAL_REQUEST_FAILURE'
 
 
 const initialState = () => ({
@@ -21,6 +23,7 @@ const initialState = () => ({
   raidenStatusData: {},
   errors: [],
   channelDepositRequests: {},
+  channelWithdrawalRequests: {},
   serviceDepositRequests: {},
   tokenNetworkMap: {}
 })
@@ -57,17 +60,23 @@ const mutations = {
   [RAIDEN_FETCH_NODE_STATUS_FAILURE](state, error) {
     state.errors.push({type: RAIDEN_FETCH_NODE_STATUS_FAILURE, error})
   },
+  [RAIDEN_CREATE_SERVICE_DEPOSIT_REQUEST_SUCCESS](state, depositData) {
+    Vue.set(state.serviceDepositRequests, depositData.url, depositData)
+  },
+  [RAIDEN_CREATE_SERVICE_DEPOSIT_REQUEST_FAILURE](state, error) {
+    state.errors.push({type: RAIDEN_CREATE_SERVICE_DEPOSIT_REQUEST_FAILURE, error})
+  },
   [RAIDEN_CREATE_CHANNEL_DEPOSIT_REQUEST_SUCCESS](state, depositData) {
     Vue.set(state.channelDepositRequests, depositData.url, depositData)
   },
   [RAIDEN_CREATE_CHANNEL_DEPOSIT_REQUEST_FAILURE](state, error) {
     state.errors.push({type: RAIDEN_CREATE_CHANNEL_DEPOSIT_REQUEST_FAILURE, error})
   },
-  [RAIDEN_CREATE_SERVICE_DEPOSIT_REQUEST_SUCCESS](state, depositData) {
-    Vue.set(state.serviceDepositRequests, depositData.url, depositData)
+  [RAIDEN_CREATE_CHANNEL_WITHDRAWAL_REQUEST_SUCCESS](state, withdrawalData) {
+    Vue.set(state.channelWithdrawalRequests, withdrawalData.url, withdrawalData)
   },
-  [RAIDEN_CREATE_SERVICE_DEPOSIT_REQUEST_FAILURE](state, error) {
-    state.errors.push({type: RAIDEN_CREATE_SERVICE_DEPOSIT_REQUEST_FAILURE, error})
+  [RAIDEN_CREATE_CHANNEL_WITHDRAWAL_REQUEST_FAILURE](state, error) {
+    state.errors.push({type: RAIDEN_CREATE_CHANNEL_WITHDRAWAL_REQUEST_FAILURE, error})
   },
 }
 
@@ -97,18 +106,24 @@ const actions = {
       .then(({data}) => commit(RAIDEN_FETCH_NODE_STATUS_SUCCESS, data))
       .catch((error) => commit(RAIDEN_FETCH_NODE_STATUS_FAILURE, error))
   },
+  createUDCDepositRequest({commit}, {raiden, amount}) {
+    return client
+      .createServiceDepositRequest(raiden.id, amount)
+      .then(({data}) => commit(RAIDEN_CREATE_SERVICE_DEPOSIT_REQUEST_SUCCESS, data))
+      .catch((error) => commit(RAIDEN_CREATE_SERVICE_DEPOSIT_REQUEST_FAILURE, error))
+  },
   createChannelDepositRequest({commit}, {raiden, channel, amount}) {
     return client
       .createChannelDepositRequest(raiden.id, channel.id, amount)
       .then(({data}) => commit(RAIDEN_CREATE_CHANNEL_DEPOSIT_REQUEST_SUCCESS, data))
       .catch((error) => commit(RAIDEN_CREATE_CHANNEL_DEPOSIT_REQUEST_FAILURE, error))
   },
-  createUDCDepositRequest({commit}, {raiden, amount}) {
+  createChannelWithdrawalRequest({commit}, {raiden, channel, amount}) {
     return client
-      .createServiceDepositRequest(raiden.id, amount)
-      .then(({data}) => commit(RAIDEN_CREATE_SERVICE_DEPOSIT_REQUEST_SUCCESS, data))
-      .catch((error) => commit(RAIDEN_CREATE_SERVICE_DEPOSIT_REQUEST_FAILURE, error))
-  }
+      .createChannelWithdrawalRequest(raiden.id, channel.id, amount)
+      .then(({data}) => commit(RAIDEN_CREATE_CHANNEL_WITHDRAWAL_REQUEST_SUCCESS, data))
+      .catch((error) => commit(RAIDEN_CREATE_CHANNEL_WITHDRAWAL_REQUEST_FAILURE, error))
+  },
 }
 
 
