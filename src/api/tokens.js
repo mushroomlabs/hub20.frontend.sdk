@@ -1,5 +1,9 @@
 import client from './client'
 
+const NATIVE_TOKEN_ADDRESS = '0x0000000000000000000000000000000000000000'
+
+export const isNativeToken = token => token.address == NATIVE_TOKEN_ADDRESS
+
 export const convertToToken = userToken => {
   const tokenUrl = userToken.token
   const token = {...userToken}
@@ -23,6 +27,9 @@ export default {
     },
     get(token) {
       return client.get(resolveTokenUrl(token))
+    },
+    getNativeToken(chainId) {
+      return client.get(`/tokens/${chainId}-${NATIVE_TOKEN_ADDRESS}`)
     },
     getTransferCostEstimate(token) {
       return client.get(`/tokens/${token.chain_id}-${token.address}/transfer_cost`)

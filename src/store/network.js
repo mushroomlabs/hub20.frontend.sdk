@@ -16,6 +16,7 @@ const initialState = () => ({
 const getters = {
   activeChainIds: state => state.blockchains.map(chain => chain.id),
   chainsById: state => state.blockchains.reduce((acc, chain) => Object.assign({[chain.id]: chain}, acc), {}),
+  chainsByUrl: state => state.blockchains.reduce((acc, chain) => Object.assign({[chain.url]: chain}, acc), {}),
   chainData: (_, getters) => chainId => getters.chainsById[chainId],
   chainState: state => chainId => state.chainDataMap[chainId],
   IsNodeOnline: (_, getters) => chainId => getters.chainState(chainId) && getters.chainState(chainId).online,

@@ -1,6 +1,6 @@
 import Vue from 'vue'
 
-import {convertToToken, default as client} from '../api/tokens'
+import {isNativeToken, convertToToken, default as client} from '../api/tokens'
 
 export const TOKENLIST_FETCH_COLLECTION = 'TOKENLIST_FETCH_COLLECTION'
 export const TOKENLIST_FETCH_SINGLE = 'TOKENLIST_FETCH_SINGLE'
@@ -28,8 +28,6 @@ export const USER_TOKEN_FETCH_COLLECTION = 'USER_TOKEN_FETCH_COLLECTION'
 export const USER_TOKEN_FETCH_SINGLE = 'USER_TOKEN_FETCH_SINGLE'
 export const USER_TOKEN_FETCH_ERROR = 'USER_TOKEN_FETCH_ERROR'
 export const USER_TOKEN_REMOVE_SINGLE = 'USER_TOKEN_REMOVE_SINGLE'
-
-export const TOKEN_NULL_ADDRESS = '0x0000000000000000000000000000000000000000'
 
 export const ETHEREUM_NETWORKS = {
   mainnet: 1,
@@ -159,7 +157,7 @@ const getters = {
     ),
   tokensByUrl: state =>
     state.tokens.reduce((acc, token) => Object.assign({[token.url]: token}, acc), {}),
-  nativeTokens: state => state.tokens.filter(token => token.address == TOKEN_NULL_ADDRESS),
+  nativeTokens: state => state.tokens.filter(token => isNativeToken(token)),
   nativeTokensByChain: (_, getters) =>
     getters.nativeTokens.reduce(
       (acc, token) => Object.assign({[token.chain_id]: token}, acc),
@@ -191,10 +189,16 @@ const actions = {
   fetchToken({commit}, token) {
     return client.token.get(token).then(({data}) => commit(TOKEN_FETCH_SINGLE, data))
   },
-  fetchTokenByUrl({commit, getters}, tokenUrl) {
-    if (!getters.tokensByUrl[tokenUrl]) {
-      return client.token.getByUrl(tokenUrl).then(({data}) => commit(TOKEN_FETCH_SINGLE, data))
-    }
+  fetchTokenByUrl({commit}, tokenUrl) {
+    return client.token.getByUrl(tokenUrl).then(({data}) => {
+      commit(TOKEN_FETCH_SINGLE, data)
+      return data
+    })
+  },
+  fetchNativeToken({commit}, chainId) {
+    return client.token
+                 .getNativeToken(chainId)
+                 .then(({data}) => commit(TOKEN_FETCH_SINGLE, data))
   },
   fetchTransferCostEstimate({commit}, token) {
     return client
