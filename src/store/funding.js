@@ -6,6 +6,7 @@ export const FUNDING_DEPOSIT_FAILURE = 'FUNDING_DEPOSIT_FAILURE'
 export const FUNDING_DEPOSIT_LOADED = 'FUNDING_DEPOSIT_LOADED'
 export const FUNDING_DEPOSIT_CREATED = 'FUNDING_DEPOSIT_CREATED'
 export const FUNDING_DEPOSIT_LIST_LOADED = 'FUNDING_DEPOSIT_LIST_LOADED'
+export const FUNDING_WITHDRAWAL_CREATED = 'FUNDING_WITHDRAWAL_CREATED'
 export const FUNDING_TRANSFER_CREATED = 'FUNDING_TRANSFER_CREATED'
 export const FUNDING_TRANSFER_LOADED = 'FUNDING_TRANSFER_LOADED'
 export const FUNDING_TRANSFER_FAILURE = 'FUNDING_TRANSFER_FAILURE'
@@ -15,6 +16,7 @@ export const FUNDING_RESET_STATE = 'FUNDING_RESET_STATE'
 const initialState = () => ({
   deposits: [],
   transfers: [],
+  withdrawals: [],
   error: null
 })
 
@@ -59,6 +61,13 @@ const actions = {
     return client
       .scheduleTransfer(token, amount, params)
       .then(({data}) => commit(FUNDING_TRANSFER_CREATED, data))
+      .catch(error => commit(FUNDING_TRANSFER_FAILURE, error.response))
+  },
+  createWithdrawal({commit}, payload) {
+    const {token, amount, ...params} = payload
+    return client
+      .scheduleWithdrawal(token, amount, params)
+      .then(({data}) => commit(FUNDING_WITHDRAWAL_CREATED, data))
       .catch(error => commit(FUNDING_TRANSFER_FAILURE, error.response))
   },
   fetchTransfers({commit}) {

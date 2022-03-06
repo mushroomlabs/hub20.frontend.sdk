@@ -1,6 +1,6 @@
 import Decimal from 'decimal.js-light'
 
-import account from '../api/account'
+import api from '../api/account'
 import utils from './utils'
 
 export const UPDATE_BALANCES_BEGIN = 'UPDATE_BALANCES_BEGIN'
@@ -49,7 +49,7 @@ const getters = {
 const actions = {
   fetchBalances({commit}) {
     commit(UPDATE_BALANCES_BEGIN)
-    return account
+    return api
       .getBalances()
       .then(({data}) => commit(SET_BALANCES, data))
       .then(() => commit(UPDATE_BALANCES_SUCCESS))
@@ -57,7 +57,7 @@ const actions = {
   },
   fetchCredits({commit}) {
     commit(UPDATE_CREDITS_BEGIN)
-    return account
+    return api
       .getCredits()
       .then(({data}) => commit(SET_CREDITS, data))
       .then(() => commit(UPDATE_CREDITS_SUCCESS))
@@ -65,14 +65,14 @@ const actions = {
   },
   fetchDebits({commit}) {
     commit(UPDATE_DEBITS_BEGIN)
-    return account
+    return api
       .getDebits()
       .then(({data}) => commit(SET_DEBITS, data))
       .then(() => commit(UPDATE_DEBITS_SUCCESS))
       .catch(exc => commit(UPDATE_DEBITS_FAILURE, exc))
   },
   fetchProfileData({commit}) {
-    return account.getAccountDetails().then(({data}) => commit(SET_PROFILE, data))
+    return api.getAccountDetails().then(({data}) => commit(SET_PROFILE, data))
   },
   fetchAll({dispatch}) {
     dispatch('fetchBalances')

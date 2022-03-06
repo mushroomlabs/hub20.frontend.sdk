@@ -1,6 +1,6 @@
 import Vue from 'vue'
 
-import {convertToToken, default as client} from '../api/tokens'
+import {isNativeToken, convertToToken, default as client} from '../api/tokens'
 
 export const TOKENLIST_FETCH_COLLECTION = 'TOKENLIST_FETCH_COLLECTION'
 export const TOKENLIST_FETCH_SINGLE = 'TOKENLIST_FETCH_SINGLE'
@@ -9,6 +9,7 @@ export const TOKEN_FETCH_COLLECTION = 'TOKEN_FETCH_COLLECTION'
 export const TOKEN_FETCH_SINGLE = 'TOKEN_FETCH_SINGLE'
 export const TOKEN_FETCH_ERROR = 'TOKEN_FETCH_ERROR'
 export const TOKEN_UPDATE_TRANSFER_COST = 'TOKEN_UPDATE_TRANSFER_COST'
+export const TOKEN_SET_ROUTES = 'TOKEN_SET_ROUTES'
 export const TOKEN_SEARCH_ERROR = 'TOKEN_SEARCH_ERROR'
 
 export const USER_TOKENLIST_FETCH_COLLECTION = 'USER_TOKENLIST_FETCH_COLLECTION'
@@ -27,8 +28,6 @@ export const USER_TOKEN_FETCH_COLLECTION = 'USER_TOKEN_FETCH_COLLECTION'
 export const USER_TOKEN_FETCH_SINGLE = 'USER_TOKEN_FETCH_SINGLE'
 export const USER_TOKEN_FETCH_ERROR = 'USER_TOKEN_FETCH_ERROR'
 export const USER_TOKEN_REMOVE_SINGLE = 'USER_TOKEN_REMOVE_SINGLE'
-
-export const TOKEN_NULL_ADDRESS = '0x0000000000000000000000000000000000000000'
 
 export const ETHEREUM_NETWORKS = {
   mainnet: 1,
@@ -142,6 +141,7 @@ const initialTokenListData = () => ({
 const initialState = () => ({
   tokens: [],
   transferCosts: {},
+  routes: {},
   tokenLists: [],
   userTokens: [],
   userTokenLists: [],
@@ -157,7 +157,7 @@ const getters = {
     ),
   tokensByUrl: state =>
     state.tokens.reduce((acc, token) => Object.assign({[token.url]: token}, acc), {}),
-  nativeTokens: state => state.tokens.filter(token => token.address == TOKEN_NULL_ADDRESS),
+  nativeTokens: state => state.tokens.filter(token => isNativeToken(token)),
   nativeTokensByChain: (_, getters) =>
     getters.nativeTokens.reduce(
       (acc, token) => Object.assign({[token.chain_id]: token}, acc),
@@ -189,15 +189,26 @@ const actions = {
   fetchToken({commit}, token) {
     return client.token.get(token).then(({data}) => commit(TOKEN_FETCH_SINGLE, data))
   },
-  fetchTokenByUrl({commit, getters}, tokenUrl) {
-    if (!getters.tokensByUrl[tokenUrl]) {
-      return client.token.getByUrl(tokenUrl).then(({data}) => commit(TOKEN_FETCH_SINGLE, data))
-    }
+  fetchTokenByUrl({commit}, tokenUrl) {
+    return client.token.getByUrl(tokenUrl).then(({data}) => {
+      commit(TOKEN_FETCH_SINGLE, data)
+      return data
+    })
+  },
+  fetchNativeToken({commit}, chainId) {
+    return client.token
+                 .getNativeToken(chainId)
+                 .then(({data}) => commit(TOKEN_FETCH_SINGLE, data))
   },
   fetchTransferCostEstimate({commit}, token) {
     return client
       .token.getTransferCostEstimate(token)
       .then(({data}) => commit(TOKEN_UPDATE_TRANSFER_COST, {token, weiAmount: data}))
+  },
+  fetchRoutes({commit}, token) {
+    return client
+      .token.getRoutes(token)
+      .then(({data}) => commit(TOKEN_SET_ROUTES, {token, routes: data}))
   },
   fetchTokenLists({commit, dispatch}) {
     return client
@@ -292,6 +303,9 @@ const mutations = {
   },
   [TOKEN_UPDATE_TRANSFER_COST](state, {token, weiAmount}) {
     Vue.set(state.transferCosts, token.url, weiAmount)
+  },
+  [TOKEN_SET_ROUTES](state, {token, routes}) {
+    Vue.set(state.routes, token.url, routes)
   },
   [TOKEN_SEARCH_ERROR](state, error) {
     state.errors.push({error, type: TOKEN_SEARCH_ERROR})
