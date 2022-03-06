@@ -6,9 +6,9 @@ export default {
     return this._client.get('/accounting/report')
   },
   getWalletBalances() {
-    return this._client.get('/accounting/wallets')
+    return this._client.get('/wallets')
   },
   getWalletBalance(walletAddress) {
-    return this._client.get(`/accounting/wallets/${walletAddress}`)
+    return this._client.get(`/wallets/${walletAddress}`)
   }
 }

@@ -2,15 +2,25 @@ export const toWei = function (token, amount) {
   return Math.floor(amount * 10 ** token.decimals)
 }
 
+export const shortAddress = function(address) {
+  const stringSize = address.length
+  const prefix = address.substr(0, 8)
+  const suffix = address.substr(stringSize - 4, stringSize)
+  return `${prefix}...${suffix}`
+}
+
 export const formattedAmount = function (amount, token, maxDigits) {
+
+  const tokenSymbol = token && token.symbol || ''
+
   if (amount == 0) {
-    return `0 ${token.symbol}`
+    return `0 ${tokenSymbol}`.trim()
   }
 
   let maximumSignificantDigits = maxDigits || token.decimals
   let formatter = new Intl.NumberFormat([], {maximumSignificantDigits})
   let formattedAmount = formatter.format(amount)
-  return `${formattedAmount} ${token.symbol}`
+  return `${formattedAmount} ${tokenSymbol}`.trim()
 }
 
 export const formattedCurrency = function (amount, currencyCode) {
@@ -44,4 +54,4 @@ export const humanizeReference = function (referenceType, transactionType) {
   return 'N/A'
 }
 
-export default {toWei, formattedAmount, formattedCurrency, humanizeReference}
+export default {toWei, shortAddress, formattedAmount, formattedCurrency, humanizeReference}
