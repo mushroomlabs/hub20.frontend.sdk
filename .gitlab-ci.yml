@@ -26,4 +26,4 @@ release:
     - npm publish
 
   only:
-    - master
+    - tags
