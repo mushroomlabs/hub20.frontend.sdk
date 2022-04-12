@@ -1,6 +1,6 @@
 import Vue from 'vue'
 
-import {isNativeToken, convertToToken, default as client} from '../api/tokens'
+import {isNativeToken, default as client} from '../api/tokens'
 
 export const TOKENLIST_FETCH_COLLECTION = 'TOKENLIST_FETCH_COLLECTION'
 export const TOKENLIST_FETCH_SINGLE = 'TOKENLIST_FETCH_SINGLE'
@@ -226,7 +226,6 @@ const actions = {
       .userToken.getList(filterOptions)
       .then(({data}) => {
         commit(USER_TOKEN_FETCH_COLLECTION, data)
-        data.forEach(userToken => commit(TOKEN_FETCH_SINGLE, convertToToken(userToken)))
       })
       .catch(error => commit(USER_TOKEN_FETCH_ERROR, error))
   },
