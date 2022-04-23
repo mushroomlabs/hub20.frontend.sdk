@@ -36,4 +36,6 @@ export const coingeckoData = {
     }
   },
   baseCurrency: "USD",
+  tokenLogoMap: {
+  }
 }

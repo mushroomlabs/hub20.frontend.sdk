@@ -1,30 +1,23 @@
 import {mapGetters, mapState} from 'vuex'
 
 export const BlockchainMixin = {
-  props: {
-    chain: {
-      type: Object
-    }
-  },
   computed: {
-    ...mapState('network', ['blockchains']),
-    ...mapGetters('network', {
-      getChainData: 'chainData',
-      getChainState: 'chainState',
-      getCurrentBlock: 'currentBlock'
-    }),
-    ...mapGetters('network', ['IsNodeSynced', 'IsNodeOnline']),
+    ...mapState('network', ['blockchains', 'chainStateMap']),
+    ...mapGetters('network', ['chainsById', 'getChainState']),
     chainId() {
       return this.chain.id
     },
+    chainState() {
+      return this.getChainState(this.chainId)
+    },
     currentBlock() {
-      return this.getCurrentBlock(this.chainId)
+      return this.chainState && this.chainState.height
     },
     synced() {
-      return this.IsNodeSynced(this.chainId)
+      return this.chainState && this.chainState.synced
     },
     online() {
-      return this.IsNodeOnline(this.chainId)
+      return this.chainState && this.chainState.online
     }
   }
 }

@@ -29,6 +29,9 @@ export default {
   props: {
     route: {
       type: Object,
+    },
+    chain: {
+      type: Object,
     }
   },
   data() {
