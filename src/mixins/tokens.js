@@ -8,7 +8,7 @@ export const TokenMixin = {
   computed: {
     ...mapState('network', ['blockchains']),
     ...mapState('tokens', ['tokens']),
-    ...mapGetters('network', ['chainData', 'chainState']),
+    ...mapGetters('network', ['getChainData', 'getChainState']),
     ...mapGetters('tokens', ['tokenListsByUrl', 'tokensByUrl', 'nativeTokensByChain']),
     tokenOptions() {
       return Object.values(this.tokensByUrl).map(token => ({
@@ -30,7 +30,7 @@ export const TokenMixin = {
       return token && token.chain_id
     },
     getChain(token) {
-      return token && this.chainData(token.chain_id)
+      return token && this.getChainData(token.chain_id)
     },
     getNativeToken(token) {
       return this.isTokenNative(token) ? token : this.nativeTokensByChain[this.getChainId(token)]
