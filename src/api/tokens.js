@@ -1,6 +1,6 @@
 import client from './client'
 
-const NATIVE_TOKEN_ADDRESS = '0x0000000000000000000000000000000000000000'
+export const NATIVE_TOKEN_ADDRESS = '0x0000000000000000000000000000000000000000'
 
 export const isNativeToken = token => token.address == NATIVE_TOKEN_ADDRESS
 

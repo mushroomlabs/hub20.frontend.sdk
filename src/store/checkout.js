@@ -2,21 +2,17 @@ import Decimal from 'decimal.js-light'
 
 import client from '../api/checkout'
 
-export const STORE_SET = 'STORE_SET'
-export const STORE_SET_OPENED = 'STORE_SET_OPENED'
-export const STORE_SET_CLOSED = 'STORE_SET_CLOSED'
-
-export const CHARGE_SET_DATA = 'CHARGE_SET_DATA'
-export const CHECKOUT_SET_DATA = 'CHECKOUT_SET_DATA'
-export const CHECKOUT_SET_OPTIONAL_HANDLERS = 'CHECKOUT_SET_OPTIONAL_HANDLERS'
-export const CHECKOUT_RESET = 'CHECKOUT_RESET'
-export const CHECKOUT_SET_CANCELED = 'CHECKOUT_SET_CANCELED'
-export const CHECKOUT_SET_PAYMENT_SENT = 'CHECKOUT_SET_PAYMENT_SENT'
-export const CHECKOUT_SET_PAYMENT_RECEIVED = 'CHECKOUT_SET_PAYMENT_RECEIVED'
-export const CHECKOUT_SET_PAYMENT_CONFIRMED = 'CHECKOUT_SET_PAYMENT_CONFIRMED'
-export const CHECKOUT_SET_EXPIRED = 'CHECKOUT_SET_EXPIRED'
-export const CHECKOUT_WEBSOCKET_OPEN = 'CHECKOUT_WEBSOCKET_OPEN'
-export const CHECKOUT_WEBSOCKET_CLOSE = 'CHECKOUT_WEBSOCKET_CLOSE'
+import {
+  CHECKOUT_STORE_SETUP_ERROR,
+  CHECKOUT_STORE_SET_DATA,
+  CHECKOUT_CHARGE_SETUP_ERROR,
+  CHECKOUT_CHARGE_SET_DATA,
+  CHECKOUT_SET_DATA,
+  CHECKOUT_RESET,
+  CHECKOUT_SET_PREFERRED_PAYMENT_NETWORK,
+  CHECKOUT_WEBSOCKET_OPEN,
+  CHECKOUT_WEBSOCKET_CLOSE,
+} from './types'
 
 const initialState = () => ({
   merchantStore: null,
@@ -24,6 +20,9 @@ const initialState = () => ({
   charge: null,
   websocket: null,
   supportsWebsocket: true,
+  preferedPaymentNetwork: null,
+  storeSetupError: null,
+  chargeSetupError: null
 })
 
 const getters = {
@@ -33,75 +32,66 @@ const getters = {
   checkoutId: state => state.checkout && state.checkout.id,
   hasActiveConnection: state => state.websocket && state.websocket.readyState === WebSocket.OPEN,
   chargeCurrencyCode: state => state.charge && state.charge.currencyCode,
-  chargeAmount: state => state.charge && state.charge.amount,
-  externalIdentifier: state => state.charge && state.charge.externalIdentifier,
+  chargeAmount: state => state.charge && Decimal(state.charge.amount).toNumber(),
+  checkoutAmount: (_, getters) => getters.invoice && getters.invoice.amount,
+  routes: state => state.checkout && state.checkout.routes,
+  openRoutes: (_, getters) => getters.routes.filter(route => route.is_open),
   payments: state => (state.checkout && state.checkout.payments) || [],
   confirmedPayments: (_, getters) => getters.payments.filter(payment => payment.confirmed),
-  paymentToken: (state, getters, _, rootGetters) => {
-    let tokenUrl = state.checkout && state.checkout.token
-    return tokenUrl && rootGetters['tokens/tokensByUrl'][tokenUrl]
-  },
-  tokenPayments: (state, getters) => {
-    let token = getters.paymentToken
-    return (
-      (token && getters.payments &&
-        getters.payments.filter(payment => payment.currency.address == token.address)) ||
-      []
-    )
+  invoice: state => state.checkout && state.checkout.invoice,
+  paymentToken: (_, getters, __, rootGetters) => {
+    const tokenUrl = getters.invoice && getters.invoice.token
+    const tokenMap = rootGetters['tokens/tokensByUrl']
+    return tokenUrl && tokenMap && tokenMap[tokenUrl]
   },
   totalAmountPaid: (state, getters) =>
-    getters.payments ? getters.tokenPayments.reduce((acc, payment) => acc + payment.amount, 0) : 0,
+    getters.payments.reduce((acc, payment) => acc + payment.amount, 0),
   totalAmountConfirmed: getters =>
     getters.confirmedPayments ? getters.confirmedPayments.reduce((acc, payment) => acc + payment.amount, 0) : 0,
   hasPartialPayment: (state, getters) => {
-    return getters.totalAmountPaid > 0 && getters.totalAmountPaid < state.checkout.amount
+    return getters.totalAmountPaid > 0 && getters.totalAmountPaid < state.checkout.invoice.amount
   },
-  hasPartialConfirmation: (state, getters) => {
-    return (
-      getters.totalAmountConfirmed > 0 && getters.totalAmountConfirmed < state.checkout.amount
-    )
-  },
-  isConfirmed: state => Boolean(state.checkout && state.checkout.status === 'confirmed'),
+  isConfirmed: (_, getters) => getters.totalAmountConfired >= getters.checkoutAmount,
   isExpired: state => Boolean(state.checkout && state.checkout.status === 'expired'),
   isOpen: state => Boolean(state.checkout && state.checkout.status === 'open'),
   isProcessing: state => Boolean(state.checkout && state.checkout.status === 'paid'),
   isPaid: (_, getters) => Boolean(getters.tokenAmountDue) && getters.tokenAmountDue.lte(getters.totalAmountPaid),
   isFinalized: state =>
     Boolean(state.checkout) && ['expired', 'confirmed'].includes(state.checkout.status),
-  tokenAmountDue: (state, getters) => {
-    if (!state.checkout) return null
-    if (!state.checkout.amount) return null
+  tokenAmountDue: (_, getters) => {
+    if (!getters.checkoutAmount) return null
+    if (!getters.paymentToken) return null
 
-    return Decimal(state.checkout.amount).toDecimalPlaces(getters.paymentToken.decimals)
+    return Decimal(getters.checkoutAmount).toDecimalPlaces(getters.paymentToken.decimals)
   },
-  pendingAmountDue: (state, getters) => {
-    if (!state.checkout) return null
-    if (!state.checkout.amount) return null
+  pendingAmountDue: (_, getters) => {
+    if (!getters.checkoutAmount) return null
 
-    const received = getters.tokenPayments.reduce(
-      (acc, payment) => acc.add(Decimal(payment.amount)),
-      Decimal(0)
-    )
-
-    const dueAmount = Decimal(state.checkout.amount).minus(received)
+    const received = Decimal(getters.totalAmountPaid)
+    const dueAmount = Decimal(getters.checkoutAmount).minus(received)
     return dueAmount.gte(0) ? dueAmount : Decimal(0)
   },
-  acceptedTokens: (state, getters, rootState) => {
-    let allTokens = rootState.tokens.tokens
-    let tokenUrls = state.merchantStore && state.merchantStore.accepted_currencies
-    return tokenUrls && allTokens && allTokens.filter(t => tokenUrls.includes(t.url))
-  },
+  acceptedTokens: state => state.merchantStore && state.merchantStore.accepted_currencies
 }
 
 const mutations = {
-  [STORE_SET](state, storeData) {
+  [CHECKOUT_STORE_SET_DATA](state, storeData) {
     state.merchantStore = storeData
   },
-  [CHARGE_SET_DATA](state, chargeData) {
+  [CHECKOUT_CHARGE_SET_DATA](state, chargeData) {
     state.charge = chargeData
   },
   [CHECKOUT_SET_DATA](state, checkoutData) {
     state.checkout = checkoutData
+  },
+  [CHECKOUT_SET_PREFERRED_PAYMENT_NETWORK](state, paymentNetwork) {
+    state.preferedPaymentNetwork = paymentNetwork
+  },
+  [CHECKOUT_STORE_SETUP_ERROR](state, error) {
+    state.storeSetupError = error
+  },
+  [CHECKOUT_CHARGE_SETUP_ERROR](state, error) {
+    state.chargeSetupError = error
   },
   [CHECKOUT_RESET](state) {
     state.checkout = null
@@ -123,17 +113,24 @@ const mutations = {
 }
 
 const actions = {
-  start({state, commit, getters}, {token, tokenAmount}) {
+  start({state, commit}, {token, tokenAmount, paymentNetwork}) {
+    commit(CHECKOUT_SET_PREFERRED_PAYMENT_NETWORK, paymentNetwork)
+
     return client
       .create({
         storeData: state.merchantStore,
-        externalIdentifier: getters.externalIdentifier,
+        reference: state.charge && state.charge.reference,
         tokenAmount: Number(tokenAmount).toFixed(token.decimals),
         token,
       })
-      .then(({data}) => {
-        commit(CHECKOUT_SET_DATA, data)
-      })
+      .then(({data}) => commit(CHECKOUT_SET_DATA, data))
+  },
+  openNewRoute({dispatch, getters}, paymentNetwork) {
+    const checkoutId = getters.checkoutId
+
+    return client
+      .createNewRoute(checkoutId, paymentNetwork)
+      .then(() => dispatch('fetch', checkoutId))
   },
   reset({commit}) {
     commit(CHECKOUT_RESET)
@@ -142,7 +139,7 @@ const actions = {
     const url = rootGetters['server/checkoutEventWebsocketUrl'](checkoutId)
     const ws = new WebSocket(url)
     commit(CHECKOUT_WEBSOCKET_OPEN, ws)
-    return new Promise(resolve => resolve(ws))
+    return ws
   },
   closeWebsocket({commit}) {
     commit(CHECKOUT_WEBSOCKET_CLOSE)

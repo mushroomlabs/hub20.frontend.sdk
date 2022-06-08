@@ -15,7 +15,7 @@ import stores from './stores'
 import tokenModule, * as tokens from './tokens'
 import users from './users'
 import web3 from './web3'
-import types from './types'
+import * as types from './types'
 
 export {events, tokens, types}
 

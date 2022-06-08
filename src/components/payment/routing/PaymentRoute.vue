@@ -1,5 +1,5 @@
 <template>
-<div class="payment-route" :class="{selected, expired}">
+<div class="payment-route" :class="{expired}">
   <div class="payment-route-details">
     <BlockchainPaymentRouteDetail v-if="isBlockchainRoute" :route="route" :amount="amount" :token="token" :chain="chain" />
     <RaidenPaymentRouteDetail v-if="isRaidenRoute" :route="route" :amount="amount" :token="token" :chain="chain" />
@@ -35,9 +35,8 @@ export default {
       type: [Decimal, Object, Number],
       required: false
     },
-    selected: {
-      type: Boolean,
-      default: false
+    chain: {
+      type: Object
     }
   },
   watch: {
@@ -49,16 +48,13 @@ export default {
   },
   computed: {
     expired() {
-      if (this.isBlockchainRoute) {
-        return this.currentBlock > this.route.expiration_block
-      }
-      return false
+      return this.route.is_expired
     },
     isBlockchainRoute() {
-      return this.route.type == 'blockchain'
+      return this.route.network == 'blockchain'
     },
     isRaidenRoute() {
-      return this.route.type == 'raiden'
+      return this.route.network == 'raiden'
     }
   }
 }

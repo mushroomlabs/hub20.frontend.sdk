@@ -3,16 +3,17 @@ import auth from '../api/auth'
 const TOKEN_STORAGE_KEY = 'token'
 const USERNAME_STORAGE_KEY = 'username'
 
-export const LOGIN_BEGIN = 'LOGIN_BEGIN'
-export const LOGIN_CLEAR = 'LOGIN_CLEAR'
-export const LOGIN_FAILURE = 'LOGIN_FAILURE'
-export const LOGIN_SUCCESS = 'LOGIN_SUCCESS'
-export const LOGOUT = 'LOGOUT'
-export const AUTH_SET_USERNAME = 'AUTH_SET_USERNAME'
-export const AUTH_SET_TOKEN = 'AUTH_SET_TOKEN'
-export const AUTH_REMOVE_TOKEN = 'AUTH_REMOVE_TOKEN'
-export const AUTH_REMOVE_USERNAME = 'AUTH_REMOVE_USERNAME'
-export const AUTH_RESET_STATE = 'AUTH_RESET_STATE'
+import {
+  LOGIN_BEGIN,
+  LOGIN_FAILURE,
+  LOGIN_SUCCESS,
+  LOGOUT,
+  AUTH_SET_USERNAME,
+  AUTH_SET_TOKEN,
+  AUTH_REMOVE_TOKEN,
+  AUTH_REMOVE_USERNAME,
+  AUTH_RESET_STATE
+} from './types'
 
 const initialState = () => ({
   authenticating: false,

@@ -1,5 +1,7 @@
-export const ADD_NOTIFICATION = 'ADD_NOTIFICATION'
-export const NOTIFICATION_RESET_STATE = 'NOTIFICATION_RESET_STATE'
+import {
+  NOTIFICATION_ADD,
+  NOTIFICATION_RESET_STATE,
+} from './types'
 
 const initialState = () => ({
   notifications: new Array()
@@ -30,7 +32,7 @@ const actions = {
 }
 
 const mutations = {
-  [ADD_NOTIFICATION](state, notification) {
+  [NOTIFICATION_ADD](state, notification) {
     notification.created = new Date()
     state.notifications.push(notification)
   },

@@ -8,7 +8,7 @@
     <span class="amount-value">{{
       payment.amount | formattedAmount(payment.currency)
       }}</span>
-    <EtherscanLink class="identifier" v-if="payment.transaction" :transactionHash="payment.transaction" :networkId="payment.currency.network_id" />
+    <EtherscanLink class="identifier" v-if="payment.transaction" :transactionHash="payment.transaction" :networkId="payment.currency.chain_id" />
     <span v-if="!payment.transaction" class="identifier" :title="payment.identifier">{{ payment.identifier }}</span>
   </li>
 </ul>
