@@ -2,7 +2,7 @@ import client from './client'
 
 export const NATIVE_TOKEN_ADDRESS = '0x0000000000000000000000000000000000000000'
 
-export const isNativeToken = token => token.address == NATIVE_TOKEN_ADDRESS
+export const isNativeToken = token => (token.address === undefined && token.chain_id !== undefined)
 
 export const convertToToken = userToken => {
   const tokenUrl = userToken.token
@@ -13,8 +13,8 @@ export const convertToToken = userToken => {
   return token
 }
 
-export const resolveTokenUrl = token => `/tokens/${token.chain_id}-${token.address}`
-export const resolveUserTokenUrl = token => `/my/tokens/${token.chain_id}-${token.address}`
+export const resolveTokenUrl = token => `/tokens/${token.id}`
+export const resolveUserTokenUrl = token => `/my/tokens/${token.id}`
 
 export default {
   _client: client,
@@ -28,17 +28,14 @@ export default {
     get(token) {
       return client.get(resolveTokenUrl(token))
     },
-    getNativeToken(chainId) {
-      return client.get(`/tokens/${chainId}-${NATIVE_TOKEN_ADDRESS}`)
-    },
     getTransferCostEstimate(token) {
-      return client.get(`/tokens/${token.chain_id}-${token.address}/transfer_cost`)
+      return client.get(`${resolveTokenUrl(token)}/transfer_cost`)
     },
     getRoutes(token) {
-      return client.get(`/tokens/${token.chain_id}-${token.address}/routes`)
+      return client.get(`${resolveTokenUrl(token)}/routes`)
     },
     getExtraInfo(token) {
-      return client.get(`/tokens/${token.chain_id}-${token.address}/info`)
+      return client.get(`${resolveTokenUrl(token)}/info`)
     },
     search(searchTerm, filterParams) {
       const params = {...filterParams}
