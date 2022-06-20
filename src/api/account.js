@@ -3,16 +3,13 @@ import client from './client'
 export default {
   _client: client,
   getCredits() {
-    return this._client.get('/credits')
+    return this._client.get('/my/credits')
   },
   getDebits() {
-    return this._client.get('/debits')
+    return this._client.get('/my/debits')
   },
   getBalances() {
-    return this._client.get('/balances')
-  },
-  getTokenBalance(address) {
-    return this._client.get(`/balance/${address}`)
+    return this._client.get('/my/balances')
   },
   getAccountDetails() {
     return this._client.get('/my/profile')
