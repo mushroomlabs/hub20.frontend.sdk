@@ -4,12 +4,12 @@ export const EVENT_WEBSOCKET_SET_HANDLER = 'EVENT_WEBSOCKET_SET_HANDLER'
 export const EVENT_RESET_STATE = 'EVENT_RESET_STATE'
 
 export const EVENT_TYPES = {
-  BLOCKCHAIN_BLOCK_CREATED: 'blockchain.block.created',
-  BLOCKCHAIN_DEPOSIT_BROADCAST: 'blockchain.deposit.broadcast',
-  BLOCKCHAIN_DEPOSIT_RECEIVED: 'blockchain.deposit.received',
-  BLOCKCHAIN_ROUTE_EXPIRED: 'blockchain.payment_route.expired',
-  ETHEREUM_NODE_UNAVAILABLE: 'ethereum_node.unavailable',
-  ETHEREUM_NODE_OK: 'ethereum_node.ok',
+  ETHEREUM_BLOCK_CREATED: 'ethereum.block.created',
+  ETHEREUM_DEPOSIT_BROADCAST: 'ethereum.deposit.broadcast',
+  ETHEREUM_DEPOSIT_RECEIVED: 'ethereum.deposit.received',
+  ETHEREUM_ROUTE_EXPIRED: 'ethereum.route.expired',
+  ETHEREUM_NODE_UNAVAILABLE: 'ethereum.provider.offline',
+  ETHEREUM_NODE_OK: 'ethereum.provider.online',
   RAIDEN_DEPOSIT_RECEIVED: 'raiden.deposit.received',
   RAIDEN_DEPOSIT_CONFIRMED: 'raiden.deposit.confirmed',
   RAIDEN_ROUTE_EXPIRED: 'raiden.payment_route.expired'

@@ -3,49 +3,64 @@ import Vue from 'vue'
 import client from '../api/network'
 
 export const NETWORK_SET_INITIALIZED = 'NETWORK_SET_INITIALIZED'
-export const NETWORK_LOAD_NETWORK_DATA = 'NETWORK_LOAD_NETWORK_DATA'
-export const NETWORK_LOAD_BLOCKCHAIN_LIST = 'NETWORK_LOAD_BLOCKCHAIN_LIST'
-export const NETWORK_SET_CHAIN_STATE = 'NETWORK_SET_CHAIN_STATE'
+export const NETWORK_LOAD_LIST = 'NETWORK_LOAD_LIST'
+export const NETWORK_SET_DATA = 'NETWORK_SET_DATA'
+export const NETWORK_SET_STATE = 'NETWORK_SET_STATE'
 export const NETWORK_SET_BLOCKCHAIN_HEIGHT = 'NETWORK_SET_BLOCKCHAIN_HEIGHT'
 
+const BLOCKCHAIN_NETWORK_TYPES = ['ethereum']
+
 const initialState = () => ({
-  availableNetworks: {},
-  blockchains: [],
-  chainStateMap: {},
+  availableNetworks: [],
+  networkMap: {},
+  networkStateMap: {},
   initialized: false
 })
 
 const getters = {
-  activeChainIds: state => state.blockchains.map(chain => chain.id),
-  chainsById: state => state.blockchains.reduce((acc, chain) => Object.assign({[chain.id]: chain}, acc), {}),
-  chainsByUrl: state => state.blockchains.reduce((acc, chain) => Object.assign({[chain.url]: chain}, acc), {}),
+  blockchains: state => Object.values(state.networkMap).filter(network => BLOCKCHAIN_NETWORK_TYPES.includes(network.type)),
+  chainsById: (_, getters) => getters.blockchains.reduce((acc, chain) => Object.assign({[chain.chain_id]: chain}, acc), {}),
+  chainsByUrl: (_, getters) => getters.blockchains.reduce((acc, chain) => Object.assign({[chain.url]: chain}, acc), {}),
   getChainData: (_, getters) => chainId => getters.chainsById[chainId],
-  getChainState: state => chainId => state.chainStateMap[chainId],
+  getChainState: (state, getters) => chainId => {
+    const chainData = getters.chainsById[chainId]
+    return chainData && state.networkStateMap[chainData.id]
+  },
   isLoaded: state => state.initialized
 }
 
 const actions = {
   getAvailableNetworks({commit}){
     return client.getAvailableNetworks().then(({data}) => {
-      commit(NETWORK_LOAD_NETWORK_DATA, data)
+      commit(NETWORK_LOAD_LIST, data)
+      return data
     })
   },
-  getBlockchains({commit}) {
-    return client.getBlockchainList().then(({data}) => {
-      commit(NETWORK_LOAD_BLOCKCHAIN_LIST, data)
+  getNetworkDetailedData({commit}, networkId) {
+    return client.getNetwork(networkId).then(({data}) => {
+      commit(NETWORK_SET_DATA, {networkId, data})
     })
   },
-  getStatus({commit}, chainId) {
-    return client.getBlockchainStatus(chainId).then(({data}) => {
-      commit(NETWORK_SET_CHAIN_STATE, {chainId, data})
+  updateBlockHeight({commit, getters}, {chainId, blockNumber}) {
+    const chainData = getters.getChainData(chainId)
+    const chainState = getters.getChainState(chainId)
+    if (chainData && chainState) {
+      commit(NETWORK_SET_BLOCKCHAIN_HEIGHT, {networkId: chainData.id, chainState: chainState, blockNumber})
+    }
+  },
+  getStatus({commit}, networkId) {
+    return client.getNetworkStatus(networkId).then(({data}) => {
+      commit(NETWORK_SET_STATE, {networkId, data})
     })
   },
   initialize({commit, dispatch, getters}) {
     if (!getters.isLoaded) {
       return dispatch('getAvailableNetworks')
-        .then(() => dispatch('getBlockchains'))
-        .then(() => {
-          getters.activeChainIds.forEach(chainId => dispatch('getStatus', chainId))
+        .then((data) => {
+          data.forEach(networkData => {
+            dispatch('getStatus', networkData.id)
+            dispatch('getNetworkDetailedData', networkData.id)
+          })
           commit(NETWORK_SET_INITIALIZED)
         })
     }
@@ -56,26 +71,30 @@ const mutations = {
   [NETWORK_SET_INITIALIZED](state) {
       state.initialized = true
   },
-  [NETWORK_LOAD_NETWORK_DATA](state, data) {
+  [NETWORK_LOAD_LIST](state, data) {
     Vue.set(state, 'availableNetworks', data)
   },
-  [NETWORK_LOAD_BLOCKCHAIN_LIST](state, data) {
-    Vue.set(state, 'blockchains', data)
+  [NETWORK_SET_DATA](state, {networkId, data}) {
+    const networkMap = {...state.networkMap}
+
+    networkMap[networkId] = data
+    Vue.set(state, 'networkMap', networkMap)
   },
-  [NETWORK_SET_CHAIN_STATE](state, {chainId, data}) {
-    const chainStateMap = {...state.chainStateMap}
+  [NETWORK_SET_STATE](state, {networkId, data}) {
+    const networkStateMap = {...state.networkStateMap}
 
-    chainStateMap[chainId] = data
+    networkStateMap[networkId] = data
 
-    Vue.set(state, 'chainStateMap', chainStateMap)
+    Vue.set(state, 'networkStateMap', networkStateMap)
   },
-  [NETWORK_SET_BLOCKCHAIN_HEIGHT](state, {chainId, blockNumber}) {
-    const chainStateMap = {...state.chainStateMap}
+  [NETWORK_SET_BLOCKCHAIN_HEIGHT](state, {networkId, chainState, blockNumber}) {
+    const networkStateMap = {...state.networkStateMap}
 
-    if (chainStateMap[chainId]) {
-      chainStateMap[chainId].height = blockNumber
-      Vue.set(state, 'chainStateMap', chainStateMap)
-    }
+    chainState.height = blockNumber
+
+    networkStateMap[networkId] = chainState
+
+    Vue.set(state, 'networkStateMap', networkStateMap)
   }
 }
 

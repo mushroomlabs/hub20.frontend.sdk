@@ -2,7 +2,7 @@ import client from './client'
 
 const indexResponseKeys = [
   'accounting_report_url',
-  'blockchains_url',
+  'networks_url',
   'current_user_url',
   'tokens_url',
   'users_url',

@@ -5,10 +5,10 @@ export default {
   getAvailableNetworks() {
     return this._client.get('/networks')
   },
-  getBlockchainList() {
-    return this._client.get('/networks/blockchains')
+  getNetwork(networkId) {
+    return this._client.get(`/networks/${networkId}`)
   },
-  getBlockchainStatus(chainId) {
-    return this._client.get(`/networks/blockchains/${chainId}/status`)
+  getNetworkStatus(networkId) {
+    return this._client.get(`/networks/${networkId}/status`)
   }
 }
