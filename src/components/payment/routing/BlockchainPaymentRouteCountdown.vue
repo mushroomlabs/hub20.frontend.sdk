@@ -8,7 +8,7 @@
 </template>
 
 <script>
-import BlockchainMixin from '../../../mixins/network'
+import {BlockchainMixin} from '../../../mixins/network'
 
 import BlockchainPaymentRouteCountdownCircle from './BlockchainPaymentRouteCountdownCircle'
 

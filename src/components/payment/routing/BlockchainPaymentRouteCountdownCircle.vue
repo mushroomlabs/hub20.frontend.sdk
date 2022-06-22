@@ -17,7 +17,7 @@
 </template>
 
 <script>
-import BlockchainMixin from '../../../mixins/network'
+import {BlockchainMixin} from '../../../mixins/network'
 
 const CIRCLE_RADIUS = 35
 const WARNING_THRESHOLD = 30

@@ -10,7 +10,7 @@
 <script>
 import Decimal from 'decimal.js-light'
 
-import BlockchainMixin from '../../../mixins/network'
+import {BlockchainMixin} from '../../../mixins/network'
 
 import BlockchainPaymentRouteDetail from './BlockchainPaymentRouteDetail'
 import RaidenPaymentRouteDetail from './RaidenPaymentRouteDetail'
