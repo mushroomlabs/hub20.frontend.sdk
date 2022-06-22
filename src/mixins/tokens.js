@@ -33,10 +33,11 @@ export const TokenMixin = {
       return token && this.getChainData(token.chain_id)
     },
     getNativeToken(token) {
-      return this.isTokenNative(token) ? token : this.nativeTokensByChain[this.getChainId(token)]
+      const chain = this.getChain(token)
+      return this.isTokenNative(token) ? token : chain && this.tokensByUrl[chain.token]
     },
     isTokenNative(token) {
-      return token.address == NULL_ADDRESS
+      return !('address' in token)
     },
     getLogoUrl(token) {
 
