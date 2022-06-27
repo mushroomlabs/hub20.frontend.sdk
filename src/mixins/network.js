@@ -1,11 +1,29 @@
 import {mapGetters, mapState} from 'vuex'
 
+export const PaymentNetworkMixin = {
+  computed: {
+    ...mapState('network', ['availableNetworks', 'networkMap']),
+    ...mapGetters('network', ['networksByUrl', 'getNetworkState']),
+    networkId() {
+      return this.network && this.network.id
+    },
+    networkState() {
+      return this.networkId && this.getNetworkState(this.networkId)
+    },
+    synced() {
+      return this.networkState && this.networkState.synced
+    },
+    online() {
+      return this.networkState && this.networkState.online
+    }
+  }
+}
+
 export const BlockchainMixin = {
   computed: {
-    ...mapState('network', ['blockchains', 'chainStateMap']),
-    ...mapGetters('network', ['chainsById', 'getChainState']),
+    ...mapGetters('network', ['blockchains', 'chainsById', 'getChainState']),
     chainId() {
-      return this.chain.id
+      return this.network.chain_id
     },
     chainState() {
       return this.getChainState(this.chainId)
@@ -13,13 +31,7 @@ export const BlockchainMixin = {
     currentBlock() {
       return this.chainState && this.chainState.height
     },
-    synced() {
-      return this.chainState && this.chainState.synced
-    },
-    online() {
-      return this.chainState && this.chainState.online
-    }
   }
 }
 
-export default BlockchainMixin
+export default {BlockchainMixin, PaymentNetworkMixin}

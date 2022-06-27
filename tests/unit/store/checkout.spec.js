@@ -14,7 +14,7 @@ import {
   TOKEN_FETCH_COLLECTION,
 } from '@/store/types'
 
-import {tokenList} from './fixtures/tokens'
+import {tokenList} from '../../fixtures/tokens'
 
 const EXTERNAL_IDENTIFIER = 'CHECKOUT UNIT TEST'
 const CURRENCY = 'USD'
@@ -102,10 +102,6 @@ describe('store', () => {
     expect(store.getters['checkout/isLoaded']).toBe(true)
   })
 
-  it('checkout should be open', () => {
-    expect(store.getters['checkout/isPaid']).toBe(false)
-  })
-
   it('should have a checkout', () => {
     expect(store.state.checkout).toBeTruthy()
   })
@@ -116,14 +112,5 @@ describe('store', () => {
 
   it('should get token amount due', () => {
     expect(store.getters['tokens/tokensByUrl']).not.toBe(undefined)
-    expect(store.getters['checkout/paymentToken']).not.toBe(undefined)
-  })
-
-  it('should be charging the correct amount', () => {
-    const token = store.getters['checkout/paymentToken']
-    const dueAmount = store.getters['checkout/tokenAmountDue']
-    expect(dueAmount.toDecimalPlaces(token.decimals)).toEqual(
-      AMOUNT.toDecimalPlaces(token.decimals)
-    )
   })
 })

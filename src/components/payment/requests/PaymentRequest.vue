@@ -1,18 +1,17 @@
 <template>
-  <div class="payment-request">
+<div class="payment-request">
     <PaymentRoute
       v-for="route in openRoutes"
-      :chain="chain"
       :route="route"
       :token="token"
-      :amount="pendingAmountDue"
+      :amount="totalAmountUnpaid"
       :key="route.id"
     />
   </div>
 </template>
 
 <script>
-import {mapGetters} from 'vuex'
+import Decimal from 'decimal.js-light'
 
 import TokenMixin from '../../../mixins/tokens'
 import PaymentRoute from '../routing/PaymentRoute'
@@ -26,28 +25,61 @@ export default {
   props: {
     paymentRequest: {
       type: Object,
-    },
-  },
-  data() {
-    return {
-      selectedRoute: null,
     }
   },
   computed: {
-    ...mapGetters('network', ['getChainData']),
-    ...mapGetters('checkout', ['pendingAmountDue', 'paymentToken', 'openRoutes']),
+    routes() {
+      return this.paymentRequest.routes || []
+    },
+    openRoutes() {
+      return this.routes.filter(route => route.is_open)
+    },
+    payments() {
+      return this.paymentRequest.payments || []
+    },
+    confirmedPayments() {
+      return this.payments.filter(payment => payment.confirmed)
+    },
     token() {
-      return this.paymentToken
+      return this.tokensByUrl[this.paymentRequest.token]
     },
-    chain() {
-      return this.getChainData(this.chainId)
+    totalAmountPaid() {
+      return this.payments.reduce((acc, payment) => acc + payment.amount, 0)
     },
-    chainId() {
-      return this.getChainId(this.token)
-    }
-  },
-  mounted() {
+    totalAmountConfirmed() {
+      return this.confirmedPayments.reduce((acc, payment) => acc + payment.amount, 0)
+    },
+    totalAmountDue() {
+      if (!this.paymentRequest.amount) {
+        return null
+      }
 
-  },
+      if (!this.token) {
+        return null
+      }
+
+      return Decimal(this.paymentRequest.amount).toDecimalPlaces(this.token.decimals)
+    },
+    totalAmountUnpaid() {
+      if (!this.totalAmountDue) return null
+
+      const received = Decimal(this.totalAmountPaid)
+      const dueAmount = this.totalAmountDue.minus(received)
+      return dueAmount.gte(0) ? dueAmount : Decimal(0)
+    },
+    hasPartialPayment() {
+      return this.totalAmountPaid > 0 && this.totalAmountPaid < this.paymentRequest.amount
+    },
+    isConfirmed() {
+      return this.totalAmountConfirmed >= this.paymentRequest.checkoutAmount
+    },
+    isPaid() {
+      if (!this.paymentRequest.amount) {
+        return this.payments.length > 0
+      }
+
+      return this.totalAmountDue && this.totalAmountDue.lte(this.totalAmountPaid)
+    },
+  }
 }
 </script>
