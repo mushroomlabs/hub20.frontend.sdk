@@ -9,7 +9,7 @@ import {
   TOKEN_FETCH_SINGLE,
   TOKEN_FETCH_ERROR,
   TOKEN_UPDATE_TRANSFER_COST,
-  TOKEN_SET_ROUTES,
+  TOKEN_SET_NETWORKS,
   TOKEN_SEARCH_ERROR,
   USER_TOKENLIST_FETCH_COLLECTION,
   USER_TOKENLIST_FETCH_SINGLE,
@@ -27,10 +27,6 @@ import {
   USER_TOKEN_REMOVE_SINGLE
 } from './types'
 
-function canPayWithRaiden(tokenRouteInfo) {
-  return Boolean(tokenRouteInfo && tokenRouteInfo.networks.raiden)
-}
-
 const initialTokenListData = () => ({
   name: '',
   description: '',
@@ -41,7 +37,7 @@ const initialTokenListData = () => ({
 const initialState = () => ({
   tokens: [],
   transferCosts: {},
-  routes: {},
+  tokenNetworkMap: {},
   tokenLists: [],
   userTokens: [],
   userTokenLists: [],
@@ -73,7 +69,7 @@ const getters = {
   userTokensByUrl: state =>
     state.userTokens.reduce((acc, token) => Object.assign({[token.url]: token}, acc), {}),
   tokenListSubmissionErrors: state => state.errors.filter(error => error.type === USER_TOKENLIST_EDIT_ERROR),
-  tokensWithRaidenRoute: state => state.tokens.filter(token => canPayWithRaiden(state.routes[token.url]))
+  usableNetworksForToken: state => token => token && state.tokenNetworkMap[token.url]
 }
 
 const actions = {
@@ -107,10 +103,14 @@ const actions = {
       .token.getTransferCostEstimate(token)
       .then(({data}) => commit(TOKEN_UPDATE_TRANSFER_COST, {token, weiAmount: data}))
   },
-  fetchRoutes({commit}, token) {
+  fetchTokenNetworks({commit}, token) {
     return client
-      .token.getRoutes(token)
-      .then(({data}) => commit(TOKEN_SET_ROUTES, {token, routes: data}))
+      .token.getTokenNetworks(token)
+      .then(({data}) => {
+        const networks = data && data.networks
+        commit(TOKEN_SET_NETWORKS, {token, networks})
+        return networks
+      })
   },
   fetchTokenLists({commit, dispatch}) {
     return client
@@ -128,6 +128,7 @@ const actions = {
       .userToken.getList(filterOptions)
       .then(({data}) => {
         commit(USER_TOKEN_FETCH_COLLECTION, data)
+        return data
       })
       .catch(error => commit(USER_TOKEN_FETCH_ERROR, error))
   },
@@ -205,8 +206,8 @@ const mutations = {
   [TOKEN_UPDATE_TRANSFER_COST](state, {token, weiAmount}) {
     Vue.set(state.transferCosts, token.url, weiAmount)
   },
-  [TOKEN_SET_ROUTES](state, {token, routes}) {
-    Vue.set(state.routes, token.url, routes)
+  [TOKEN_SET_NETWORKS](state, {token, networks}) {
+    Vue.set(state.tokenNetworkMap, token.url, networks)
   },
   [TOKEN_SEARCH_ERROR](state, error) {
     state.errors.push({error, type: TOKEN_SEARCH_ERROR})

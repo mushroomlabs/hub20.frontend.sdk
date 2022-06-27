@@ -31,8 +31,8 @@ export default {
     getTransferCostEstimate(token) {
       return client.get(`${resolveTokenUrl(token)}/transfer_cost`)
     },
-    getRoutes(token) {
-      return client.get(`${resolveTokenUrl(token)}/routes`)
+    getTokenNetworks(token) {
+      return client.get(`${resolveTokenUrl(token)}/networks`)
     },
     getExtraInfo(token) {
       return client.get(`${resolveTokenUrl(token)}/info`)

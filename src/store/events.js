@@ -7,12 +7,13 @@ export const EVENT_TYPES = {
   ETHEREUM_BLOCK_CREATED: 'ethereum.block.created',
   ETHEREUM_DEPOSIT_BROADCAST: 'ethereum.deposit.broadcast',
   ETHEREUM_DEPOSIT_RECEIVED: 'ethereum.deposit.received',
+  ETHEREUM_DEPOSIT_CONFIRMED: 'ethereum.deposit.confirmed',
   ETHEREUM_ROUTE_EXPIRED: 'ethereum.route.expired',
   ETHEREUM_NODE_UNAVAILABLE: 'ethereum.provider.offline',
   ETHEREUM_NODE_OK: 'ethereum.provider.online',
   RAIDEN_DEPOSIT_RECEIVED: 'raiden.deposit.received',
   RAIDEN_DEPOSIT_CONFIRMED: 'raiden.deposit.confirmed',
-  RAIDEN_ROUTE_EXPIRED: 'raiden.payment_route.expired'
+  RAIDEN_ROUTE_EXPIRED: 'raiden.route.expired'
 }
 
 

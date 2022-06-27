@@ -34,6 +34,7 @@ const getters = {
     const chainData = getters.chainsById[chainId]
     return chainData && state.networkStateMap[chainData.id]
   },
+  networksByUrl: state => Object.values(state.networkMap).reduce((acc, network) => Object.assign({[network.url]: network}, acc), {}),
   getNetworkData: state => networkId => state.networkMap[networkId],
   getNetworkState: state => networkId => state.networkStateMap[networkId],
   isOnline: state => networkId => {
@@ -72,14 +73,12 @@ const actions = {
   initialize({commit, dispatch, getters}) {
     if (!getters.isLoaded) {
       return dispatch('fetchNetworks').then(data => {
-        data.forEach(networkData => {
-          dispatch('fetchNetworkState', networkData.id)
-          dispatch('getNetworkDetailedData', networkData.id)
-        })
-        commit(NETWORK_SET_INITIALIZED)
-      })
+        data.forEach(networkData => dispatch('fetchNetworkState', networkData.id)
+          .then(() => dispatch('getNetworkDetailedData', networkData.id))
+        )
+      }).then(() => commit(NETWORK_SET_INITIALIZED))
     }
-  },
+  }
 }
 
 const mutations = {

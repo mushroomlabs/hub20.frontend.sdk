@@ -33,44 +33,12 @@ const getters = {
   hasActiveConnection: state => state.websocket && state.websocket.readyState === WebSocket.OPEN,
   chargeCurrencyCode: state => state.charge && state.charge.currencyCode,
   chargeAmount: state => state.charge && Decimal(state.charge.amount).toNumber(),
-  checkoutAmount: (_, getters) => getters.invoice && getters.invoice.amount,
-  routes: state => state.checkout && state.checkout.routes,
-  openRoutes: (_, getters) => getters.routes.filter(route => route.is_open),
-  payments: state => (state.checkout && state.checkout.payments) || [],
-  confirmedPayments: (_, getters) => getters.payments.filter(payment => payment.confirmed),
   invoice: state => state.checkout && state.checkout.invoice,
-  paymentToken: (_, getters, __, rootGetters) => {
-    const tokenUrl = getters.invoice && getters.invoice.token
-    const tokenMap = rootGetters['tokens/tokensByUrl']
-    return tokenUrl && tokenMap && tokenMap[tokenUrl]
-  },
-  totalAmountPaid: (state, getters) =>
-    getters.payments.reduce((acc, payment) => acc + payment.amount, 0),
-  totalAmountConfirmed: getters =>
-    getters.confirmedPayments ? getters.confirmedPayments.reduce((acc, payment) => acc + payment.amount, 0) : 0,
-  hasPartialPayment: (state, getters) => {
-    return getters.totalAmountPaid > 0 && getters.totalAmountPaid < state.checkout.invoice.amount
-  },
-  isConfirmed: (_, getters) => getters.totalAmountConfired >= getters.checkoutAmount,
   isExpired: state => Boolean(state.checkout && state.checkout.status === 'expired'),
   isOpen: state => Boolean(state.checkout && state.checkout.status === 'open'),
   isProcessing: state => Boolean(state.checkout && state.checkout.status === 'paid'),
-  isPaid: (_, getters) => Boolean(getters.tokenAmountDue) && getters.tokenAmountDue.lte(getters.totalAmountPaid),
   isFinalized: state =>
     Boolean(state.checkout) && ['expired', 'confirmed'].includes(state.checkout.status),
-  tokenAmountDue: (_, getters) => {
-    if (!getters.checkoutAmount) return null
-    if (!getters.paymentToken) return null
-
-    return Decimal(getters.checkoutAmount).toDecimalPlaces(getters.paymentToken.decimals)
-  },
-  pendingAmountDue: (_, getters) => {
-    if (!getters.checkoutAmount) return null
-
-    const received = Decimal(getters.totalAmountPaid)
-    const dueAmount = Decimal(getters.checkoutAmount).minus(received)
-    return dueAmount.gte(0) ? dueAmount : Decimal(0)
-  },
   acceptedTokens: state => state.merchantStore && state.merchantStore.accepted_currencies
 }
 

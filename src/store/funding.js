@@ -7,6 +7,7 @@ import {
   FUNDING_DEPOSIT_LOADED,
   FUNDING_DEPOSIT_CREATED,
   FUNDING_DEPOSIT_LIST_LOADED,
+  FUNDING_ROUTING_FAILURE,
   FUNDING_WITHDRAWAL_CREATED,
   FUNDING_TRANSFER_CREATED,
   FUNDING_TRANSFER_LOADED,
@@ -19,10 +20,13 @@ const initialState = () => ({
   deposits: [],
   transfers: [],
   withdrawals: [],
-  error: null
+  errors: []
 })
 
 const getters = {
+  depositsById: state => state.deposits.reduce(
+    (acc, deposit) => Object.assign({[deposit.id]: deposit}, acc), {}
+  ),
   depositsByToken: state => token =>
     state.deposits.filter(deposit => deposit.token == token.url),
   openDeposits: state => state.deposits.filter(deposit => deposit.status == 'open'),
@@ -36,14 +40,17 @@ const actions = {
       .createDeposit(token)
       .then(({data}) => {
         commit(FUNDING_DEPOSIT_CREATED, data)
-        return new Promise(resolve => resolve(data))
+        return data
       })
       .catch(error => commit(FUNDING_DEPOSIT_FAILURE, error.response))
   },
   fetchDeposit({commit}, depositId) {
     return client
       .getDeposit(depositId)
-      .then(({data}) => commit(FUNDING_DEPOSIT_LOADED, data))
+      .then(({data}) => {
+        commit(FUNDING_DEPOSIT_LOADED, data)
+        return data
+      })
       .catch(error => commit(FUNDING_DEPOSIT_FAILURE, error.response))
   },
   fetchDeposits({commit}) {
@@ -57,6 +64,12 @@ const actions = {
       .getDeposits({open: true})
       .then(({data}) => commit(FUNDING_DEPOSIT_LIST_LOADED, data))
       .catch(error => commit(FUNDING_DEPOSIT_FAILURE, error.response))
+  },
+  createDepositRoute({commit, dispatch}, {deposit, network}) {
+    return client
+      .createRoute(deposit, network)
+      .then(() => dispatch('fetchDeposit', deposit.id))
+      .catch(error => commit(FUNDING_ROUTING_FAILURE, error.response))
   },
   createTransfer({commit}, payload) {
     const {token, amount, ...params} = payload
@@ -95,7 +108,7 @@ const mutations = {
     state.deposits.push(depositData)
   },
   [FUNDING_DEPOSIT_FAILURE](state, error) {
-    state.error = error.data
+    state.errors.push(error.data)
   },
   [FUNDING_DEPOSIT_LIST_LOADED](state, depositList) {
     // Array.concat is not reactive, so we make a new one to replace
@@ -105,6 +118,9 @@ const mutations = {
 
     Vue.set(state, 'deposits', fullList)
   },
+  [FUNDING_ROUTING_FAILURE](state, error) {
+    state.errors.push(error.data)
+  },
   [FUNDING_TRANSFER_CREATED](state, transferData) {
     state.transfers.push(transferData)
   },
@@ -112,7 +128,7 @@ const mutations = {
     state.transfers.push(transferData)
   },
   [FUNDING_TRANSFER_FAILURE](state, error) {
-    state.error = error.data
+    state.errors.push(error.data)
   },
   [FUNDING_TRANSFER_LIST_LOADED](state, transferList) {
     state.transfers = transferList
