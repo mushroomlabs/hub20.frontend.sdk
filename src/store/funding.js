@@ -68,7 +68,10 @@ const actions = {
   createDepositRoute({commit, dispatch}, {deposit, network}) {
     return client
       .createRoute(deposit, network)
-      .then(() => dispatch('fetchDeposit', deposit.id))
+      .then(({data}) => {
+        dispatch('fetchDeposit', deposit.id)
+        return data
+      })
       .catch(error => commit(FUNDING_ROUTING_FAILURE, error.response))
   },
   createTransfer({commit}, payload) {

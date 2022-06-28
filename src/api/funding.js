@@ -19,7 +19,7 @@ export default {
   createRoute(deposit, network) {
     return this._client.post(`/my/deposits/${deposit.id}/routes`, {
       network: network.url
-    })
+    }).then(({data}) => this._client.get(data.url))
   },
   createPaymentOrder(token, amount) {
     return this._client.post('/payment/orders', {
