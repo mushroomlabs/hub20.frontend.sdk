@@ -1,7 +1,7 @@
 import {v4 as uuidv4} from 'uuid'
 import { shallowMount } from '@vue/test-utils'
 
-import PaymentRequest from '@/components/payment/requests/PaymentRequest'
+import Invoice from '@/components/payment/requests/Invoice'
 import {tokenList} from '../../fixtures/tokens'
 
 const EPOCH_TIMESTAMP = '1970-01-01T00:00:00.000000Z'
@@ -23,12 +23,12 @@ const depositFactory = (values = {}) => {
     status: "open"
   }
 
-  return shallowMount(PaymentRequest, {propsData: {paymentRequest: DEPOSIT}})
+  return shallowMount(Invoice, {propsData: {paymentRequest: DEPOSIT}})
 }
 
 describe('deposit', () => {
   it('should have proper class', () => {
     const wrapper = depositFactory()
-    expect(wrapper.find('.payment-request').exists()).toBeTruthy()
+    expect(wrapper.find('.invoice').exists()).toBeTruthy()
   })
 })

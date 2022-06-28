@@ -1,11 +1,11 @@
 import IncomingPaymentList from './IncomingPaymentList'
-import PaymentRequest from './PaymentRequest'
+import Invoice from './Invoice'
 import PaymentTracker from './PaymentTracker'
 
 export default {
   IncomingPaymentList,
-  PaymentRequest,
+  Invoice,
   PaymentTracker,
 }
 
-export {IncomingPaymentList, PaymentRequest, PaymentTracker}
+export {IncomingPaymentList, Invoice, PaymentTracker}
