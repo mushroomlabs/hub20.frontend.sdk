@@ -1,13 +1,15 @@
 import * as requests from './requests'
-import {PaymentRequest as Invoice} from './requests'
+import Invoice from './requests'
 import * as routing from './routing'
+import PaymentRoute from './routing/PaymentRoute'
 
 let components = {
   requests,
   routing,
-  Invoice
+  Invoice,
+  PaymentRoute,
 }
 
 export default components
 
-export {Invoice, requests, routing}
+export {Invoice, PaymentRoute, requests, routing}

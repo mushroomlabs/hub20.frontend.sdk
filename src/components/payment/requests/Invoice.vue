@@ -1,27 +1,17 @@
 <template>
-<div class="payment-request">
-    <PaymentRoute
-      v-for="route in openRoutes"
-      :route="route"
-      :token="token"
-      :amount="totalAmountUnpaid"
-      :key="route.id"
-    />
+  <div class="invoice">
+  <span class="reference">{{ paymentRequest.reference }}</span>
   </div>
 </template>
 
 <script>
-import Decimal from 'decimal.js-light'
+  import Decimal from 'decimal.js-light'
 
 import TokenMixin from '../../../mixins/tokens'
-import PaymentRoute from '../routing/PaymentRoute'
 
 export default {
-  name: 'payment-request',
+  name: 'invoice',
   mixins: [TokenMixin],
-  components: {
-    PaymentRoute,
-  },
   props: {
     paymentRequest: {
       type: Object,
@@ -77,9 +67,8 @@ export default {
       if (!this.paymentRequest.amount) {
         return this.payments.length > 0
       }
-
       return this.totalAmountDue && this.totalAmountDue.lte(this.totalAmountPaid)
     },
-  }
+  },
 }
 </script>
