@@ -17,7 +17,7 @@
 </template>
 
 <script>
-import {PaymentNetworkMixin} from '../../../mixins/network'
+import {PaymentNetworkMixin, BlockchainMixin} from '../../../mixins/network'
 
 const CIRCLE_RADIUS = 35
 const WARNING_THRESHOLD = 30
@@ -25,7 +25,7 @@ const CRITICAL_THRESHOLD = 15
 
 export default {
   name: 'blockchain-payment-route-countdown-circle',
-  mixins: [PaymentNetworkMixin],
+  mixins: [PaymentNetworkMixin, BlockchainMixin],
   props: {
     route: {
       type: Object,
