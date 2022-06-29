@@ -45,7 +45,6 @@
         :recipientAddress="route.address"
         />
     </div>
-
   </div>
 </div>
 </template>

@@ -17,19 +17,19 @@ import {
 } from './types'
 
 const initialState = () => ({
-  deposits: [],
-  transfers: [],
-  withdrawals: [],
+  depositMap: {},
+  transferMap: [],
+  withdrawalMap: [],
   errors: []
 })
 
+
 const getters = {
-  depositsById: state => state.deposits.reduce(
-    (acc, deposit) => Object.assign({[deposit.id]: deposit}, acc), {}
-  ),
-  depositsByToken: state => token =>
-    state.deposits.filter(deposit => deposit.token == token.url),
-  openDeposits: state => state.deposits.filter(deposit => deposit.status == 'open'),
+  deposits: state => Object.values(state.depositMap),
+  depositsById: state => state.depositMap,
+  depositsByToken: (_, getters) => token =>
+    getters.deposits.filter(deposit => deposit.token == token.url),
+  openDeposits: (_, getters) => getters.deposits.filter(deposit => deposit.status == 'open'),
   openDepositsByToken: (state, getters) => token =>
     getters.openDeposits.filter(deposit => deposit.token == token.url)
 }
@@ -105,21 +105,23 @@ const actions = {
 
 const mutations = {
   [FUNDING_DEPOSIT_CREATED](state, depositData) {
-    state.deposits.push(depositData)
+    const depositMap = {...state.depositMap}
+    depositMap[depositData.id] = depositData
+    Vue.set(state, 'depositMap', depositMap)
   },
   [FUNDING_DEPOSIT_LOADED](state, depositData) {
-    state.deposits.push(depositData)
+    const depositMap = {...state.depositMap}
+    depositMap[depositData.id] = depositData
+    Vue.set(state, 'depositMap', depositMap)
   },
   [FUNDING_DEPOSIT_FAILURE](state, error) {
     state.errors.push(error.data)
   },
   [FUNDING_DEPOSIT_LIST_LOADED](state, depositList) {
-    // Array.concat is not reactive, so we make a new one to replace
-    const fullList = new Array()
-    fullList.concat(state.deposits)
-    fullList.concat(depositList)
+    const depositMap = {...state.depositMap}
 
-    Vue.set(state, 'deposits', fullList)
+    depositList.forEach(deposit => depositMap[deposit.id] = deposit)
+    Vue.set(state, 'depositMap', depositMap)
   },
   [FUNDING_ROUTING_FAILURE](state, error) {
     state.errors.push(error.data)
