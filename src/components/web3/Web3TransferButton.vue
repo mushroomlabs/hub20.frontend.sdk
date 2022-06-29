@@ -10,7 +10,7 @@
         step="any"
       />
     </div>
-    <button :disabled="!transferAmount" @click="startTransfer()">
+    <button @click="startTransfer()">
       <slot>Pay {{ token.code }} with wallet</slot>
     </button>
   </div>
@@ -49,11 +49,12 @@ export default {
   methods: {
     ...mapActions('web3', ['makeTransfer', 'setAccount']),
     startTransfer() {
+      const selectedAmount = this.transferAmount ? Decimal(this.transferAmount) : Decimal(0)
       return window.ethereum.request({method: 'eth_requestAccounts'})
         .then(accounts => this.setAccount(accounts.pop()))
         .then(() => this.makeTransfer({
           token: this.token,
-          amount: Decimal(this.transferAmount),
+          amount: selectedAmount,
           recipientAddress: this.recipientAddress,
         }))
       .catch((error) => console.error(error.message))

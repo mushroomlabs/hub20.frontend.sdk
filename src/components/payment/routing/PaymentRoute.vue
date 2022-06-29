@@ -34,7 +34,7 @@
     </button>
 
     <button class="payment-route-display-toggle qrcode" @click="toggleDisplay" v-if="!showQrCode">
-      Show QR code instead
+      Show Payment data QR code
     </button>
 
     <div v-if="hasWeb3 && token && isBlockchainRoute" class="web3-wallet-display">
