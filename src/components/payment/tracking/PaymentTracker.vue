@@ -1,6 +1,6 @@
 <template>
   <div class="payment-tracker">
-    <IncomingPaymentList :payments="paymentRequest.payments" />
+    <PaymentList :payments="paymentRequest.payments" />
   </div>
 </template>
 
@@ -8,12 +8,12 @@
 import Decimal from 'decimal.js-light'
 import TokenMixin from '../../../mixins/tokens'
 
-import IncomingPaymentList from './IncomingPaymentList'
+import PaymentList from './PaymentList'
 
 export default {
   mixins: [TokenMixin],
   components: {
-    IncomingPaymentList,
+    PaymentList,
   },
   props: {
     paymentRequest: {
