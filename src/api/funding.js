@@ -17,9 +17,11 @@ export default {
     return this._client.get(`/my/deposits/${deposit.id}/routes`)
   },
   createRoute(deposit, network) {
-    return this._client.post(`/my/deposits/${deposit.id}/routes`, {
-      network: network.url
-    }).then(({data}) => this._client.get(data.url))
+    return this._client
+      .post(`/my/deposits/${deposit.id}/routes`, {
+        network: network.url,
+      })
+      .then(({data}) => this._client.get(data.url))
   },
   createPaymentOrder(token, amount) {
     return this._client.post('/payment/orders', {
@@ -36,25 +38,18 @@ export default {
   getTransfers() {
     return this._client.get('/my/transfers')
   },
-  getWithdrawals() {
-    return this._client.get('/my/transfers')
+  getTransfer(transferId) {
+    return this._client.get(`/my/transfers/${transferId}`)
   },
-  scheduleTransfer(token, amount, options) {
+  scheduleTransfer(token, amount, network, options) {
+    const url = `/networks/${network.id}/transfers`
     let payload = {
       amount: amount,
       token: token.url,
       ...options,
     }
-    return this._client.post('/my/transfers', payload)
-  },
-  scheduleWithdrawal(token, amount, network, options) {
-    const url = '/networks/{network.id}/withdrawals'
-    let payload = {
-      amount: amount,
-      token: token.url,
-      ...options,
-    }
-      return this._client.post(url, payload)
-    },
-
+    return this._client
+      .post(url, payload)
+      .then(({data}) => this._client.get(data.url))
+  }
 }
