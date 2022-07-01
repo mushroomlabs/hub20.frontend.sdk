@@ -7,9 +7,8 @@ export const NULL_ADDRESS = '0x0000000000000000000000000000000000000000'
 export const TokenMixin = {
   computed: {
     ...mapState('network', ['availableNetworks']),
-    ...mapState('tokens', ['tokens']),
     ...mapGetters('network', ['blockchains', 'getChainData', 'getChainState']),
-    ...mapGetters('tokens', ['tokenListsByUrl', 'tokensByUrl', 'nativeTokensByChain', 'usableNetworksForToken']),
+    ...mapGetters('tokens', ['tokens', 'tokenListsByUrl', 'tokensByUrl', 'nativeTokensByChain', 'usableNetworksForToken']),
     tokenOptions() {
       return Object.values(this.tokensByUrl).map(token => ({
         value: token.url,
@@ -25,7 +24,7 @@ export const TokenMixin = {
   },
   filters: {formattedAmount},
   methods: {
-    ...mapActions('tokens', ['fetchTokens', 'fetchNativeToken', 'fetchToken', 'fetchTokenByUrl', 'fetchTokenLists', 'fetchTokenNetworks']),
+    ...mapActions('tokens', ['fetchTokens', 'fetchNativeToken', 'fetchToken', 'fetchTokenById', 'fetchTokenByUrl', 'fetchTokenLists', 'fetchTokenNetworks']),
     getChainId(token) {
       return token && token.chain_id
     },

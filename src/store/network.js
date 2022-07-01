@@ -18,6 +18,7 @@ const initialState = () => ({
 })
 
 const getters = {
+  networks: state => Object.values(state.networkMap),
   blockchains: state =>
     Object.values(state.networkMap).filter(network =>
       BLOCKCHAIN_NETWORK_TYPES.includes(network.type)
@@ -34,6 +35,7 @@ const getters = {
     const chainData = getters.chainsById[chainId]
     return chainData && state.networkStateMap[chainData.id]
   },
+  networksById: state => state.networkMap,
   networksByUrl: state => Object.values(state.networkMap).reduce((acc, network) => Object.assign({[network.url]: network}, acc), {}),
   getNetworkData: state => networkId => state.networkMap[networkId],
   getNetworkState: state => networkId => state.networkStateMap[networkId],

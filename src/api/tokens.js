@@ -25,6 +25,9 @@ export default {
     getByUrl(tokenUrl) {
       return client.get(tokenUrl)
     },
+    getById(tokenId) {
+      return client.get(`/tokens/${tokenId}`)
+    },
     get(token) {
       return client.get(resolveTokenUrl(token))
     },

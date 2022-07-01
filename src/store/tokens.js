@@ -35,7 +35,7 @@ const initialTokenListData = () => ({
 })
 
 const initialState = () => ({
-  tokens: [],
+  tokenMap: {},
   transferCosts: {},
   tokenNetworkMap: {},
   tokenLists: [],
@@ -46,15 +46,17 @@ const initialState = () => ({
 })
 
 const getters = {
+  tokens: state => Object.values(state.tokenMap),
   tokenListsByUrl: state =>
     state.tokenLists.reduce(
       (acc, tokenList) => Object.assign({[tokenList.url]: tokenList}, acc),
       {}
     ),
-  tokensByUrl: state =>
-    state.tokens.reduce((acc, token) => Object.assign({[token.url]: token}, acc), {}),
-  tokensByChainId: state => chainId => state.tokens.filter(token => token.chain_id == chainId),
-  nativeTokens: state => state.tokens.filter(token => isNativeToken(token)),
+  tokensByUrl: (_, getters) =>
+    getters.tokens.reduce((acc, token) => Object.assign({[token.url]: token}, acc), {}),
+  tokensById: state => state.tokenMap,
+  tokensByChainId: (_, getters) => chainId => getters.tokens.filter(token => token.chain_id == chainId),
+  nativeTokens: (_, getters) => getters.tokens.filter(token => isNativeToken(token)),
   nativeTokensByChain: (_, getters) =>
     getters.nativeTokens.reduce(
       (acc, token) => Object.assign({[token.chain_id]: token}, acc),
@@ -69,7 +71,7 @@ const getters = {
   userTokensByUrl: state =>
     state.userTokens.reduce((acc, token) => Object.assign({[token.url]: token}, acc), {}),
   tokenListSubmissionErrors: state => state.errors.filter(error => error.type === USER_TOKENLIST_EDIT_ERROR),
-  usableNetworksForToken: state => token => token && state.tokenNetworkMap[token.url]
+  usableNetworksForToken: state => token => (token && state.tokenNetworkMap[token.url]) || []
 }
 
 const actions = {
@@ -89,6 +91,12 @@ const actions = {
   },
   fetchTokenByUrl({commit}, tokenUrl) {
     return client.token.getByUrl(tokenUrl).then(({data}) => {
+      commit(TOKEN_FETCH_SINGLE, data)
+      return data
+    })
+  },
+  fetchTokenById({commit}, tokenId) {
+    return client.token.getById(tokenId).then(({data}) => {
       commit(TOKEN_FETCH_SINGLE, data)
       return data
     })
@@ -189,19 +197,16 @@ const mutations = {
   [TOKEN_FETCH_ERROR](state, error) {
     state.errors.push({error, type: TOKEN_FETCH_ERROR})
   },
-  [TOKEN_FETCH_COLLECTION](state, data) {
-    const currentTokensByUrl = state.tokens.map(token => token.url)
-    data.forEach(token => {
-      if (!currentTokensByUrl.includes(token.url)) {
-        state.tokens.push(token)
-      }
-    })
+  [TOKEN_FETCH_COLLECTION](state, tokens) {
+    const tokenMap = {...state.tokenMap}
+
+    tokens.forEach(token => tokenMap[token.id] = token)
+    Vue.set(state, 'tokenMap', tokenMap)
   },
   [TOKEN_FETCH_SINGLE](state, token) {
-    const currentTokensByUrl = state.tokens.map(token => token.url)
-    if (!currentTokensByUrl.includes(token.url)) {
-      state.tokens.push(token)
-    }
+    const tokenMap = {...state.tokenMap}
+    tokenMap[token.id] = token
+    Vue.set(state, 'tokenMap', tokenMap)
   },
   [TOKEN_UPDATE_TRANSFER_COST](state, {token, weiAmount}) {
     Vue.set(state.transferCosts, token.url, weiAmount)

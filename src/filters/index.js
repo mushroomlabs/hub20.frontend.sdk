@@ -35,12 +35,15 @@ export const humanizeReference = function (referenceType, transactionType) {
     transfer: 'Transfer Received',
     transferexecution: 'Transfer Received',
     paymentconfirmation: 'Payment Received',
+    transferfailure: 'Refund due to failed withdrawal'
   }
 
   const debits = {
     transfer: 'Transfer Submitted',
     transferexecution: 'Transfer Sent',
     paymentconfirmation: 'Payment Sent',
+    internaltransfer: 'Internal Transfer',
+    blockchaintransfer: 'Blockchain Withdrawal'
   }
 
   if (transactionType == 'credit') {

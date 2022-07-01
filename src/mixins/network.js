@@ -1,4 +1,4 @@
-import {mapGetters, mapState} from 'vuex'
+import {mapActions, mapGetters, mapState} from 'vuex'
 
 export const PaymentNetworkMixin = {
   computed: {
@@ -16,6 +16,9 @@ export const PaymentNetworkMixin = {
     online() {
       return this.networkState && this.networkState.online
     }
+  },
+  methods: {
+    ...mapActions('network', ['fetchNetworks']),
   }
 }
 

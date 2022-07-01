@@ -8,7 +8,6 @@ import {
   FUNDING_DEPOSIT_CREATED,
   FUNDING_DEPOSIT_LIST_LOADED,
   FUNDING_ROUTING_FAILURE,
-  FUNDING_WITHDRAWAL_CREATED,
   FUNDING_TRANSFER_CREATED,
   FUNDING_TRANSFER_LOADED,
   FUNDING_TRANSFER_FAILURE,
@@ -18,8 +17,7 @@ import {
 
 const initialState = () => ({
   depositMap: {},
-  transferMap: [],
-  withdrawalMap: [],
+  transferMap: {},
   errors: []
 })
 
@@ -31,7 +29,14 @@ const getters = {
     getters.deposits.filter(deposit => deposit.token == token.url),
   openDeposits: (_, getters) => getters.deposits.filter(deposit => deposit.status == 'open'),
   openDepositsByToken: (state, getters) => token =>
-    getters.openDeposits.filter(deposit => deposit.token == token.url)
+    getters.openDeposits.filter(deposit => deposit.token == token.url),
+  transfers: state => Object.values(state.transferMap),
+  transfersById: state => state.transferMap,
+  transfersByToken: (_, getters) => token =>
+    getters.transfers.filter(transfer => transfer.token == token.url),
+  openTransfers: (_, getters) => getters.transfers.filter(transfer => transfer.status == 'scheduled'),
+  openTransfersByToken: (state, getters) => token =>
+    getters.openTransfers.filter(transfer => transfer.token == token.url),
 }
 
 const actions = {
@@ -74,24 +79,30 @@ const actions = {
       })
       .catch(error => commit(FUNDING_ROUTING_FAILURE, error.response))
   },
-  createTransfer({commit}, payload) {
+  createTransfer({commit}, {payload, network}) {
     const {token, amount, ...params} = payload
     return client
-      .scheduleTransfer(token, amount, params)
-      .then(({data}) => commit(FUNDING_TRANSFER_CREATED, data))
-      .catch(error => commit(FUNDING_TRANSFER_FAILURE, error.response))
-  },
-  createWithdrawal({commit}, payload) {
-    const {token, amount, ...params} = payload
-    return client
-      .scheduleWithdrawal(token, amount, params)
-      .then(({data}) => commit(FUNDING_WITHDRAWAL_CREATED, data))
-      .catch(error => commit(FUNDING_TRANSFER_FAILURE, error.response))
+      .scheduleTransfer(token, amount, network, params)
+      .then(({data}) => {
+        commit(FUNDING_TRANSFER_CREATED, data)
+        return data
+      })
+      .catch(error => commit(FUNDING_TRANSFER_FAILURE, error))
   },
   fetchTransfers({commit}) {
     return client
       .getTransfers()
       .then(({data}) => commit(FUNDING_TRANSFER_LIST_LOADED, data))
+      .catch(error => commit(FUNDING_TRANSFER_FAILURE, error))
+  },
+  fetchTransfer({commit}, transferId) {
+    console.log('fetching transfer', transferId)
+    return client
+      .getTransfer(transferId)
+      .then(({data}) => {
+        commit(FUNDING_TRANSFER_LOADED, data)
+        return data
+      })
       .catch(error => commit(FUNDING_TRANSFER_FAILURE, error.response))
   },
   initialize({dispatch}) {
@@ -127,16 +138,23 @@ const mutations = {
     state.errors.push(error.data)
   },
   [FUNDING_TRANSFER_CREATED](state, transferData) {
-    state.transfers.push(transferData)
+    const transferMap = {...state.transferMap}
+    transferMap[transferData.id] = transferData
+    Vue.set(state, 'transferMap', transferMap)
   },
   [FUNDING_TRANSFER_LOADED](state, transferData) {
-    state.transfers.push(transferData)
+    const transferMap = {...state.transferMap}
+    transferMap[transferData.id] = transferData
+    Vue.set(state, 'transferMap', transferMap)
   },
   [FUNDING_TRANSFER_FAILURE](state, error) {
-    state.errors.push(error.data)
+    state.errors.push(error)
   },
   [FUNDING_TRANSFER_LIST_LOADED](state, transferList) {
-    state.transfers = transferList
+    const transferMap = {...state.transferMap}
+
+    transferList.forEach(transfer => transferMap[transfer.id] = transfer)
+    Vue.set(state, 'transferMap', transferMap)
   },
   [FUNDING_RESET_STATE](state) {
     Object.assign(state, initialState())
